@@ -1,32 +1,95 @@
 %===============================================================================
-\categorynumber{000} % 分类采用《中国图书资料分类法》
-\UDC{000}            %《国际十进分类法UDC》的类号
+\categorynumber{TP311} % 分类采用《中国图书资料分类法》
+\UDC{004.6}            %《国际十进分类法UDC》的类号
 \secretlevel{公开}    %学位论文密级分为"公开"、"内部"、"秘密"和"机密"四种
-\studentid{130623}   %学号要完整，前面的零不能省略。
-\title{灵犀一指GNSS心法}{灵犀一指 \rotatebox{270}{GNSS} 心法}{灵犀一指}{灵犀一指}{The theory of powerful fingers}{powerful fingers}
-\author{陆小凤}{Phoenix Land, Jr.}
-\advisor{夜帝}{教授}{King Night}{Prof.}
-\coadvisor{楚留香}{副教授}{Perfume Tsu}{Associate Prof.} % 没有% 可以不填
-\degreetype{武学博士}{Doctor of kung fu} % 详细学位名称
-\major{内功}
-\submajor{内功心法}
+\studentid{184607}   %学号要完整，前面的零不能省略。
+\title{基于知识图谱的IT运维辅助系统的设计与分析}{基于知识图谱的 \rotatebox{270}{IT} 运维辅助系统的设计与分析}{智能运维}{智能运维}{Design and Analysis of IT Operation and Maintenance Assistant System based on Knowledge Graph}{AIOps}
+\author{方苏东}{Phoenix Land, Jr.}
+\advisor{漆桂林}{教授}{King Night}{Prof.}
+\coadvisor{丁岩}{高工}{Perfume Tsu}{Associate Prof.} % 没有% 可以不填
+\degreetype{工程硕士}{master of kung fu} % 详细学位名称
+\major{软件工程}
+\submajor{软件工程}
 \defenddate{\today}
 \authorizedate{\today}
 \committeechair{夜帝}
 \reviewer{张三丰}{黄药师}
-\department{东南大学武学院}{School of kung fu}
-\seuthesisthanks{本课题的研究获郭靖-黄蓉降龙基金、杨过-小龙女黯然销魂基金以及郭襄的倚天基金资助}
+\department{东南大学软件学院}{SouthEast University}
+\seuthesisthanks{本课题的研究来自于与阿里云合作项目}
 \makebigcover
 \makecover
-\begin{abstract}{武功，心法，内功，灵犀一指}
-    灵犀一指是一种非常厉害的武功。
+\begin{abstract}{智能运维，知识图谱，表示学习，故障预测}
+    随着互联网、移动互联网的迅猛发展，目前大多数应用软件都建立在一个庞大、复杂、跨协议层的大型分布式集群中。这个分布式集权的技术、软件、配置通常会不断地演变，难以避免会发生各种故障。面对海量的监控数据和庞大的系统，IT运维人员很难做出迅速、准确的运维决策以预防各种故障的出现。
+
+    近些年被提出的智能运维 (AIOps，Artificial Intelligence for IT Operations)尝试将人工智能技术引入IT运维中，通过机器学习的方法来提升运维效率。已有AIOps方案使用历史数据训练感知机、贝叶斯、随机森林等机器学习模型，用于异常检测、异常分类、故障预测等以辅助运维，但只停留在算法层面上，对知识表示和推理的积累比较少。相比于业界主要依赖算法进行的AIOps，基于知识图谱的AIOps能够结构化整合多源异构数据，规范化展示系统运行状态。知识图谱也可以把人对系统的认知、过往的运维经验沉淀成计算机可表示积累的数据，并作为先验知识来辅助运维。另外，知识图谱中经过严格定义的结构化数据使其具备一定的推理与诊断能力，从而辅助IT运维人员进行线上诊断、故障规避等。
+    
+    本文主要研究在 IT 运维中引入知识图谱以辅助运维的技术，主要工作如下：    
+
+    \begin{itemize}
+        \item [1)] 
+        基于机器学习自动化构建组件-事件知识图谱。本文将事件特征拓展至6种，并训练了机器学习分类模型判别事件间有无因果关系，进而利用历史数据沉淀出了组件-事件知识图谱，缓解了知识图谱构建的人工消耗。   
+        \item [2)]
+        组件-事件知识图谱表示学习。针对 IT 运维场景下异常沿着拓扑传导的特性，且相同实体在不同上下文环境中有着不同的含义，本文将实体表示分为语义表示和结构表示两部分，实现了实体随着不同上下文变化而动态表示。相较于经典的知识图谱表示模型，本文模型在组件-事件知识图谱三元组分类和链接预测任务上取得了最好的效果。
+        \item [3)]
+        引入知识图谱进行故障预测。本文提出了在双向记忆网络编码事件序列时，引入知识图谱来进行故障预测，取得了最佳的故障预测效果。
+        \item [4)]
+        基于上述工作，设计并实现了一个基于知识图谱的IT运维辅助系统。
+      \end{itemize}
+
 \end{abstract}
 
-\begin{englishabstract}{kung fu, theory, fundamental kung fu, powerful fingers}
-    powerful fingers is a kind of powerful kung fu.
+\begin{englishabstract}{AIOps, Knowledge Graph, Knowledge Graph Embedding, Failure Prediction}
+    With the rapid development of Internet, most applications are deployed in a large, complex, cross protocol distributed cluster. The technology, software and configuration of this distributed cluster are always evolving, and it is difficult to avoid failures. In the face of massive monitoring data and huge systems, it is difficult for IT Ops(Operations) personnel to make quick and accurate decisions to prevent failures. 
+    
+    In recent years, AIOps (artificial intelligence for it operations) is proposed to use artificial intelligence technology to improve IT Ops efficiency. The existing AIOps programs use historical data to train perceptron, Bayesian, random forest and other machine learning models for anomaly detection, anomaly classification, and failure prediction. It can be seen that AIOps only stays on the algorithm level, and does not use knowledge representation and reasoning. This paper mainly studies IT Ops technology based on knowledge graph, including the following:
+    \begin{itemize}
+        \item [1)] 
+        Build component-event knowledge graph based on machine learning methods. This paper extends the event features to 6 types, and trains the machine learning classification model to distinguish whether there is causal relationships between events.Then the component-event knowledge graph is precipitated from historical data, which alleviates the labor consumption of building knowledge graph.
+
+        \item [2)]
+        Component-event knowledge graph representation learning. 
+        According to the characteristics of exception propagation along topology in IT Ops scenarios, and the same entity has different meanings in different contexts, this paper divides entity representation into semantic representation and structural representation, and realizes the dynamic representation of entities with different contexts .Compared with the classical knowledge representation models, the model in this paper achieves the best results in the task of component-event knowledge tuple classification and link prediction.
+        
+        \item [3)]
+        Fault prediction based on component-event knowledge graph. In this paper, the bi-directional memory network is used to encode the event sequence, and then combined with the knowledge graph to predict the fault.
+
+        \item [4)]
+        Based on the above work, an IT Ops assistant system based on knowledge graph is designed and implemented. 
+        
+    \end{itemize}
+
 \end{englishabstract}
 
 \setnomname{术语与符号约定}
 \tableofcontents
 \listofothers
 %===============================================================================
+
+
+
+% 摘要 版本v1
+% 随着互联网、移动互联网的迅猛发展，目前大多数应用软件都建立在一个庞大、复杂、跨协议层的大型分布式系统之上。
+% 这个分布式系统的技术、软件、配置通常会不断地演变；其软硬件也难以避免会发生故障和变更；用户流量会发生不可预知的变化，甚至会发生安全攻击事件等等。
+% 上述问题都是IT运维(以下简称Ops，包含运维、故障诊断、安全等方面)过程中面临的重要挑战。
+% 即使各大集团在运维方面已有大量人力投入，在日常的工作中面对海量的监控数据和庞大的系统，运维人员还是很难做出迅速、准确的运维决策，
+% 导致出现各种各样的、甚至影响非常大的故障。
+
+% 近些年被提出的AIOps (Artificial Intelligence for IT Operations)尝试将人工智能的能力与运维相结合，通过机器学习的方法来提升运维效率。已有AIOps方案使用历史数据训练SVM、贝叶斯、随机森林等机器学习模型，用于异常检测、异常分类、根因溯源等辅助运维，仅仅停留在算法层面上，
+% 对知识表示和推理的积累比较少。
+% 现在业界有大量的静态和动态数据（如设备型号配置信息、设备时序信息、用户软件日志等），
+% 整合这些多元异构数据，围绕IT运维构建一套知识库，将会有效服务于集团内的自动化运维。
+% 相比于业界主要依赖于算法进行的AIOps，基于运维知识图谱的AIOps能够结构化整合异构复杂数据，
+% 对系统实时运行状态进行建模，从而进一步对系统进行自动化检测。
+% 另外，知识图谱可以把人对系统的认知、过往的运维诊断经验沉淀成计算机可以表示、积累的数据，
+% 并可以在以后的运维过程中，引入这些数据作为先验知识来辅助决策。
+% 同时，知识图谱中经过严格定义的结构化数据使其具备一定的推理与诊断能力，从而辅助人进行线上运维、异常排查分析等。
+
+% 本文主要研究在 IT 运维场景中引入知识图谱以辅助运维的技术，主要工作如下：
+
+% (1) 基于机器学习自动化构建组件-事件知识图谱。本文将事件特征拓展至6种，并训练了机器学习分类模型判别事件间有无因果关系，进而利用历史数据沉淀出了组件-事件知识图谱，缓解了知识图谱构建的人工消耗。
+
+% (2) 组件-事件知识图谱表示学习。针对 IT 运维场景下异常沿着拓扑传导的特性，且相同实体在不同上下文环境中有着不同的含义，本文将实体表示分为语义表示和结构表示两部分，实现了实体随着不同上下文变化而动态表示。相较于经典的知识图谱表示模型，本文模型在组件-事件知识图谱三元组分类和链接预测任务上取得了最好的效果。
+
+% (3) 引入知识图谱进行故障预测。本文提出了在双向记忆网络编码事件序列时，引入知识图谱来进行故障预测，取得了最佳的故障预测效果。
+
+% (4) 基于上述工作，设计并实现了一个基于知识图谱的IT运维辅助系统。

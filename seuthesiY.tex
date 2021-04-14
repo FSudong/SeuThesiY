@@ -1,5 +1,4 @@
-\documentclass[algorithmlist, figurelist,tablelist, nomlist,phd]{config/seuthesiY}
-
+\documentclass[algorithmlist, figurelist,tablelist, nomlist, master]{config/seuthesiY}
 %===============================================================================
 % 采用的编译方式为  XELATEX -→  BIBER -→    XELATEX -→    XELATEX
 % 为了加快字体的缓存效率 需要在命令行运行 fc-cache
@@ -9,16 +8,23 @@
 % %biblatex宏包的参考文献数据源加载方式
 \addbibresource[location=local]{config/seuthesiY.bib}
 
+\newtheorem{definition}{Definition}
+
 \begin{document}
 \input{chapter/abstract.tex}
 
 \mainmatter
 
 \input{chapter/Intro.tex}
-
-
+\input{chapter/construct.tex}
+\input{chapter/representation.tex}
+\input{chapter/predicterror.tex}
+\input{chapter/experiment.tex}
+\input{chapter/system.tex}
+\input{chapter/conclusion.tex}
 \backmatter
 %打印参考文献表
+\input{chapter/acknowledge.tex}
 \thesisbib
 
 \appendix
@@ -33,3 +39,5 @@
 
 
 \end{document}
+% 在线表格生成工具https://json.im/tableConvert/   https://www.tablesgenerator.com/latex_tables  https://www.tablesgenerator.com/#
+% 知识规则抽取工具 https://zhuanlan.zhihu.com/p/353043426
