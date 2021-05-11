@@ -3,11 +3,11 @@
 \UDC{004.6}            %《国际十进分类法UDC》的类号
 \secretlevel{公开}    %学位论文密级分为"公开"、"内部"、"秘密"和"机密"四种
 \studentid{184607}   %学号要完整，前面的零不能省略。
-\title{基于知识图谱的IT运维辅助系统的设计与分析}{基于知识图谱的 \rotatebox{270}{IT} 运维辅助系统的设计与分析}{}{智能运维}{Design and Analysis of IT Operation and Maintenance Assistant System based on Knowledge Graph}{AIOps}
-\author{方苏东}{Phoenix Land, Jr.}
-\advisor{漆桂林}{教授}{King Night}{Prof.}
-\coadvisor{丁岩}{高工}{Perfume Tsu}{Associate Prof.} % 没有% 可以不填
-\degreetype{工程硕士}{master of kung fu} % 详细学位名称
+\title{基于知识图谱的IT运维辅助系统的设计与分析}{基于知识图谱的 \rotatebox{270}{IT} 运维辅助系统的设计与分析}{}{}{Design and Analysis of IT Operation and Maintenance Assistant System based on Knowledge Graph}{}
+\author{方苏东}{FANG Sudong}
+\advisor{漆桂林}{教授}{QI Guilin}{Prof.}
+\coadvisor{丁岩}{高工}{DING Yan}{Ir.} % 没有% 可以不填
+\degreetype{工程硕士}{Master of Engineering} % 详细学位名称
 \major{软件工程}
 \submajor{软件工程}
 \defenddate{\today}
@@ -15,51 +15,76 @@
 \committeechair{}
 \reviewer{}{}
 \department{东南大学软件学院}{SouthEast University}
-\seuthesisthanks{本课题的研究来自于与阿里云合作项目}
-\makebigcover
+% \seuthesisthanks{本课题的研究来自于与阿里云合作项目}
+% \makebigcover
 \makecover
-\begin{abstract}{智能运维，知识图谱，表示学习，故障预测}
-    随着互联网、移动互联网的迅猛发展，目前大多数应用软件都建立在一个庞大、复杂、跨协议层的大型分布式集群中。这个分布式集权的技术、软件、配置通常会不断地演变，难以避免会发生各种故障。面对海量的监控数据和庞大的系统，IT运维人员很难做出迅速、准确的运维决策以预防各种故障的出现。
-
-    近些年被提出的智能运维 (AIOps，Artificial Intelligence for IT Operations)尝试将人工智能技术引入IT运维中，通过机器学习的方法来提升运维效率。已有AIOps方案使用历史数据训练感知机、贝叶斯、随机森林等机器学习模型，用于异常检测、异常分类、故障预测等以辅助运维，但只停留在算法层面上，对知识表示和推理的积累比较少。相比于业界主要依赖算法进行的AIOps，基于知识图谱的AIOps能够结构化整合多源异构数据，规范化展示系统运行状态。知识图谱也可以把人对系统的认知、过往的运维经验沉淀成计算机可表示积累的数据，并作为先验知识来辅助运维。另外，知识图谱中经过严格定义的结构化数据使其具备一定的推理与诊断能力，从而辅助IT运维人员进行线上诊断、故障规避等。
+\begin{abstract}{故障预测，IT运维，知识图谱，表示学习}
+    随着互联网技术的迅猛发展，目前大多数应用软件都建立在一个庞大、繁杂、跨协议层的大型分布式集群中。这类分布式集群的技术、软件、配置通常会不断地演变，难以避免会发生故障。面对海量的监控数据和庞大的系统，IT（Information Technology）运维人员很难做出迅速、准确的运维决策来预防解决各种故障。智能运维 （Artificial Intelligence for IT Operations，AIOps）旨在借助人工智能技术辅助IT运维人员提升运维效率。
     
-    本文主要研究在 IT 运维中引入知识图谱以辅助运维的技术，主要工作如下：    
+    % 已有的AIOps方案使用历史数据训练感知机、贝叶斯网、随机森林等机器学习模型，用于异常检测、异常分类、故障预测等以辅助运维，均只停留在算法层面，对知识表示和推理的积累比较少。在AIOps中引入知识图谱能够结构化整合多源异构数据，规范化展示系统运行状态。知识图谱也可以把人对系统的认知、过往的运维经验沉淀成计算机可表示积累的数据，并作为先验知识来辅助运维。另外，知识图谱中经过严格定义的结构化数据使其具备一定的推理与诊断能力，从而辅助IT运维人员进行线上诊断、故障预测等。
+    已有的AIOps方案均停留在算法层面，仅使用历史数据训练机器学习模型，却忽略了历史数据中蕴含的运维知识。这些运维知识，不仅能够解释故障产生过程，还具有通用性能够指导运维。知识图谱可以结构化整合这些历史数据中的知识，进一步辅助线上诊断、故障预测等运维工作。
 
-    \begin{itemize}
-        \item [1)] 
-        基于机器学习自动化构建组件-事件知识图谱。本文将事件特征拓展至6种，并训练了机器学习分类模型判别事件间有无因果关系，进而利用历史数据沉淀出了故障类型对应的组件-事件知识图谱，缓解了知识图谱构建的人工消耗。   
-        \item [2)]
-        组件-事件知识图谱表示学习。针对 IT 运维场景下异常沿着拓扑传导的特性，且相同实体在不同上下文环境中有着不同的含义，本文将实体表示分为语义表示和结构表示两部分，实现了实体随着不同上下文变化而动态表示。相较于经典的知识图谱表示模型，本文模型在组件-事件知识图谱三元组分类和链接预测任务上取得了最好的效果。
-        \item [3)]
-        引入知识图谱进行故障预测。本文提出了在双向记忆网络编码事件序列时，引入知识图谱来进行故障预测，取得了最佳的故障预测效果。
-        \item [4)]
-        基于上述工作，设计并实现了一个基于知识图谱的IT运维辅助系统。
-      \end{itemize}
+    本文主要研究了基于知识图谱的IT运维技术，主要工作如下：    
+
+    （1）提出了自动化构建组件-事件知识图谱的方法，利用机器学习模型发掘事件间因果关系，从历史数据沉淀出了与故障类型对应的组件-事件知识图谱，减少了知识图谱构建的人工消耗。
+
+    （2）提出了组件-事件知识图谱的表示学习模型，考虑了实体在不同上下文中含义不同，把实体表示分为了语义表示和结构表示，实现了实体随上下文动态地表示，在组件-事件知识图谱三元组分类和链接预测任务上取得了最好的效果。
+
+    （3）提出了引入组件-事件知识图谱的故障预测模型，利用各类故障对应的知识图谱识别事件序列中的关键信息，把最匹配事件序列的知识图谱作为预测结果，提高了预测结果的细粒度，增强了可解释性。
+
+    （4）基于上述工作，设计并实现了一个基于知识图谱的IT运维辅助系统。
+
+    % \begin{itemize}
+    %     \item [（1）] 
+    %     提出了自动化构建组件-事件知识图谱的方法，设计了6种事件特征，训练了机器学习分类模型判别事件间有无因果关系，进而从历史数据沉淀出了与故障类型对应的组件-事件知识图谱，减少了知识图谱构建的人工消耗。   
+    %     \item [（2）]
+    %     提出了组件-事件知识图谱的表示学习模型，考虑了相同实体在不同上下文结构中有着不同的含义，实体表示被分为了语义表示和结构表示两部分，实现了实体动态表示。相较于经典的知识图谱表示学习模型，本文模型在组件-事件知识图谱三元组分类和链接预测任务上取得了最好的效果。
+    %     \item [（3）]
+    %     引入了组件-事件知识图谱进行故障预测，采用了双向记忆网络编码实时事件序列，利用组件-事件知识图谱注意力机制识别重要信息，取得了最佳的故障预测效果。
+    %     \item [（4）]
+    %     基于上述工作，设计并实现了一个基于知识图谱的IT运维辅助系统。
+    %   \end{itemize}
 
 \end{abstract}
 
-\begin{englishabstract}{AIOps, Knowledge Graph, Knowledge Graph Embedding, Failure Prediction}
-    With the rapid development of Internet, most applications are deployed in a large, complex, cross protocol distributed cluster. The technology, software and configuration of this distributed cluster are always evolving, and it is difficult to avoid failures. In the face of massive monitoring data and huge systems, it is difficult for IT Ops(Operations) personnel to make quick and accurate decisions to prevent failures. 
+% \begin{englishabstract}{Failure Prediction, ITOps, Knowledge Graph, Knowledge Graph Embedding}
+%     With the rapid development of internet technology, most applications are built in a large, complicated and distributed cluster across protocol layers. The technology, software and configuration of the distributed cluster are always evolving, and it is difficult to avoid various failures. In the face of massive monitoring data and huge systems, it is difficult for IT Ops(Operations) personnel to make quick and accurate decisions to prevent failures. AIOps (artificial intelligence for it operations) aims to use artificial intelligence technology to improve IT Ops efficiency.
     
-    In recent years, AIOps (artificial intelligence for it operations) is proposed to use artificial intelligence technology to improve IT Ops efficiency. The existing AIOps programs use historical data to train perceptron, Bayesian, random forest and other machine learning models for anomaly detection, anomaly classification, and failure prediction. It can be seen that AIOps only stays on the algorithm level, and does not use knowledge representation and reasoning. This paper mainly studies IT Ops technology based on knowledge graph, including the following:
-    \begin{itemize}
-        \item [1)] 
-        Build component-event knowledge graph based on machine learning methods. This paper extends the event features to 6 types, and trains the machine learning classification model to distinguish whether there is causal relationships between events.Then the component-event knowledge graph is precipitated from historical data, which alleviates the labor consumption of building knowledge graph.
-
-        \item [2)]
-        Component-event knowledge graph representation learning. 
-        According to the characteristics of exception propagation along topology in IT Ops scenarios, and the same entity has different meanings in different contexts, this paper divides entity representation into semantic representation and structural representation, and realizes the dynamic representation of entities with different contexts .Compared with the classical knowledge representation models, the model in this paper achieves the best results in the task of component-event knowledge tuple classification and link prediction.
+%     The existing AIOps programs use historical data to train perceptron, Bayesian, random forest and other machine learning models for anomaly detection,
+%     anomaly classification, and failure prediction. It can be seen that AIOps only stays on the algorithm
+%     level, and does not use knowledge representation and reasoning. This paper mainly studies IT Ops
+%     technology based on knowledge graph, including the following:
+%     \begin{itemize}
+%         \item [（1）] 
+%         The component-event knowledge graph is constructed automatically, and six kinds of event characteristics are designed. The machine learning classification model is trained to judge whether there is causal relationship between event pair, and then the component-event knowledge graph corresponding to fault type is precipitated from historical data, which reduces the labor consumption of knowledge graph construction.
+%         \item [（2）]
+%         A representation learning model of component-event knowledge graph is proposed. Because exceptions propagate along topology in IT Ops scenarios, and the same entity has different meanings in different context structures, entity representation is divided into semantic representation and structural representation, which realizes dynamic representation of entities with context changes. Compared with the classical knowledge graph representation learning model, the proposed model achieves the best results on the component-event knowledge graph triple classification and link prediction tasks.
         
-        \item [3)]
-        Fault prediction based on component-event knowledge graph. In this paper, the bi-directional memory network is used to encode the event sequence, and then combined with the knowledge graph to predict the fault.
+%         \item [（3）]
+%         The component-event knowledge graph is introduced for fault prediction. After the real-time event sequence is encoded by bidirectional memory network, the attention mechanism of knowledge graph is utilized to obtain important information for fault prediction, and the best fault prediction effect is achieved.
 
-        \item [4)]
-        Based on the above work, an IT Ops assistant system based on knowledge graph is designed and implemented. 
+%         \item [（4）]
+%         Based on the above work, an IT Ops assistant system based on knowledge graph is designed and implemented. 
         
-    \end{itemize}
+%     \end{itemize}
+% \end{englishabstract}
+
+\begin{englishabstract}{Failure Prediction, IT operation and maintenance, Knowledge Graph, Knowledge Graph Embedding}
+With the rapid development of internet technology, most applications are built in a large, complicated and distributed cluster across protocol layers. The technology, software and configuration of this kind of distributed cluster are always evolving, and it is difficult to avoid failures. Faced with massive monitoring data and huge systems, it is difficult for IT (Information Technology) operation and maintenance personnel to make quick and accurate operation and maintenance decisions to prevent and solve various failures. Artificial intelligence for IT operations (AIOps) aims to assist IT operation and maintenance personnel to improve operation and maintenance efficiency by means of artificial intelligence technology. 
+
+Existing AIOps schemes all stay at the algorithm level, only use historical data to train machine learning models, but ignore trhe operation and maintenance knowledge contained in historical data. This knowledge of operation and maintenance can not only explain the process of fault generation, but also be universal and guide operation and maintenance. Knowledge graph can integrate the knowledge in these historical data structurally, and then further assist the operation and maintenance work such as online diagnosis and fault prediction. 
+
+This paper mainly studies the IT operation and maintenance technology based on knowledge graph. The main work is as follows: 
+
+(1) The method of automatically constructing component-event knowledge graph is proposed, and the causal relationship between events is discovered by machine learning model, and the component-event knowledge graph corresponding to fault types is precipitated from historical data, which reduces the labor consumption of constructing knowledge graph. 
+
+(2) A representation learning model of component-event knowledge graph is proposed. Considering the different meanings of entities in different contexts, entity representation is divided into semantic representation and structural representation, which realizes the dynamic representation of entities with context, and achieves the best results in the task of triple classification and link prediction of component-event knowledge graph.
+
+(3) A fault prediction model with component-event knowledge graph is proposed, which uses the knowledge graphs corresponding to various faults to identify the key information in the event sequence, and takes the knowledge graph that best matches the event sequence as the prediction result, thus improving the fine granularity of the prediction result and enhancing the interpretability.
+
+(4) Based on the above work, an IT operation and maintenance assistant system based on knowledge graph is designed and implemented.
 
 \end{englishabstract}
-
 \setnomname{缩略词表}
 \tableofcontents
 \listofothers

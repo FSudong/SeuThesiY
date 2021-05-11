@@ -500,8 +500,8 @@ BoldItalicFont=timesbi.ttf
     \AddToShipoutPictureBG*{\setlength{\unitlength}{1cm}\put(17,27){%
     \parbox{\paperwidth}{\includegraphics[width=2cm]{figures/seu-color-logo.png}}}}%
 
-    \vspace*{8cm}
-
+    \vspace*{10cm}
+    % \hspace*{10.5cm}
     \begin{center}
         \linespread{1.25}
         \yihao\heiti\@title\\
@@ -622,7 +622,7 @@ BoldItalicFont=timesbi.ttf
             \fi
             submitted to}\\
             {\universitynameeng}\\
-            {For the Academic Degree of \@degreetypeen}\\
+            {For the Professional Degree of \@degreetypeen}\\
             {\vspace{0.5in}}%
             {BY}\\
             {\@authoreng}\\

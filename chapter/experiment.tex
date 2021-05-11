@@ -1,5 +1,5 @@
 \chapter{实验与评估}
-本章主要介绍了针对上文所提模型所设计的实验以及结果分析。首先，描述了数据集构建过程。随后，分为三块介绍了与上文各章节对应的实验，分别为事件因果关系判别实验、组件-事件知识图谱表示学习实验、故障预测实验三部分。
+本章主要介绍了针对上文所提模型进行的实验。首先，本章描述了模拟故障、构建数据集的过程。随后，分为三块分别介绍了与上文各章节对应的实验，包括事件因果关系判别实验、组件-事件知识图谱表示学习实验、故障预测实验。
 
 \section{数据集构建}
 \begin{table}[htbp]
@@ -7,14 +7,15 @@
     \label{component-num}
     \centering
     \begin{tabular}{ccc}
-    \hline
-    组件名称      & train-ticket & sock-shop        \\ \hline
-    vpc       & 34           & 28 \\
-    slb       & 30           & 36 \\
-    ecs       & 30           & 30 \\
-    pod       & 215          & 181 \\
-    container & 720          & 621 \\
-    service   & 172          & 132 \\ \hline
+    \toprule
+    组件名称      & train-ticket & sock-shop        \\ \midrule
+    VPC       & 34           & 28 \\
+    SLB       & 30           & 36 \\
+    ECS       & 30           & 30 \\
+    Pod       & 215          & 181 \\
+    Container & 720          & 621 \\
+    Service   & 172          & 132 \\ \midrule
+    共计   & 1201          & 1028 \\ \bottomrule
     \end{tabular}
 \end{table}
 
@@ -23,31 +24,35 @@
     \centering
     \label{failure-simulation-info}
     \begin{tabular}{ccc}
-    \hline
-               & train-ticket & \multicolumn{1}{c}{sock-shop} \\ \hline
+    \toprule
+    分布式应用       & train-ticket & \multicolumn{1}{c}{sock-shop} \\ \midrule
     时间跨度       & 25天          & 14天                           \\
     平均故障时间段跨度  & 303s         & 310s                          \\
-    单位故障含有事件数目 & 4823         & 3352                          \\
-    故障次数       & 423          & 550                           \\
+    单个故障时间段含有事件数目 & 4823         & 3352                          \\
+    故障次数       & 473          & 541                           \\
+    % 故障次数       & 423          & 550                           \\
     故障种类       & 10           & 17                            \\
-    事件类型种类     & 204          & 211                           \\ \hline
+    事件类型种类     & 204          & 211                           \\ 
+    \bottomrule
     \end{tabular}
 \end{table}
 
-实验采用了阿里云kubernetes集群，集群各个组件数量如表\ref{component-num}所示。在该集群上部署了文献\parencite{qiu2020causality-mining-knowledge-graph,}中使用的两个分布式应用，即\href{https://github.com/FudanSELab/train-ticket}{train-ticket}和\href{https://github.com/microservices-demo/microservices-demo}{sock-shop}。随后使用kube-monkey和chaosblade向应用注入异常以模拟故障，在异常注入到故障产生的时间段中，阿里云的sls平台负责收集实时产生的日志数据和指标时序数据。所模拟故障的数据统计信息如表\ref{failure-simulation-info}所示。其中所有的数据后续经过事件生成模块，均转化为了事件类型数据。
+实验采用了阿里云kubernetes集群，集群各个组件数量如表\ref{component-num}所示。在该集群上部署了文献\parencite{zhou2018poster,rahman2019predicting}实验时分别使用的两个分布式应用，即\href{https://github.com/FudanSELab/train-ticket}{train-ticket}和\href{https://github.com/microservices-demo/microservices-demo}{sock-shop}。随后使用\href{https://github.com/asobti/kube-monkey}{kube-monkey}和\href{https://github.com/chaosblade-io/chaosblade}{ChaosBlade}向应用注入异常以模拟故障。在异常注入到故障产生的时间段中，阿里云的SLS平台负责收集实时产生的日志数据和指标时序数据。所模拟故障的数据统计信息如表\ref{failure-simulation-info}所示。这些数据后续经过事件生成模块，均转化为了事件类型数据。
 
 事件类型数据按照来源划分可以分成两类：指标时序事件和日志事件。指标时序事件对应着曲线变化的异常点，而日志事件对应着集群中组件实时产生的日志。指标时序事件和日志事件可以继续往下划分，所划分生成的类别与每类别的数目如下表\ref{event-type-level}所示。
 \begin{table}[htbp]
     \caption{事件类型层次关系}
+    \centering
     \label{event-type-level}
     \begin{tabular}{cccc}
-    \hline
-    事件大类别    & 细分           & 类别数目（train-ticket） & 类别数目（sock-shop） \\ \hline
+    \toprule
+    事件大类别    & 细分           & \begin{tabular}[c]{@{}c@{}}类别数目\\ （train-ticket）\end{tabular} & \begin{tabular}[c]{@{}c@{}}类别数目\\ （sock-shop）\end{tabular} \\ \midrule
     指标时序事件 & 异常点事件        & 64                 & 64              \\
-             & 告警事件         & 21                 & 21              \\ \hline
+             & 告警事件         & 21                 & 21              \\ \midrule
     日志事件    & k8s日志事件      & 50                 & 50              \\
-             & dockerIO日志事件 & 69                 & 76              \\ \hline
-    共计       &              & 204                & 211             \\ \hline
+             & dockerIO日志事件 & 69                 & 76              \\ \midrule
+    共计       &              & 204                & 211             \\ 
+    \bottomrule
     \end{tabular}
     \end{table}
 
@@ -80,15 +85,16 @@
     \caption{告警事件监控项及相应阈值}
     \label{alarm-event}
     \begin{tabular}{cc}
-    \hline
-    监控项                          & 阈值              \\ \hline
+    \toprule
+    监控项                          & 阈值              \\ \midrule
     pod.cpu.util                 & 100\% 95\% 90\% \\
     pod.mem.util                 & 100\% 95\% 90\% \\
     system.cpu.util              & 100\% 95\% 90\% \\
     system.mem.util              & 100\% 95\% 90\% \\
     system.net.drop.util         & 20\% 10\% 5\%   \\
     system.net.err.util          & 20\% 10\% 5\%   \\
-    system.partition.space.usage & 100\% 95\% 90\% \\ \hline
+    system.partition.space.usage & 100\% 95\% 90\% \\ 
+    \bottomrule
     \end{tabular}
     \end{table}
 
@@ -117,7 +123,7 @@ k8s（kubeneters）是分布式集群容器的管理系统，k8s日志事件就�
     \label{k8s-event}
 \end{equation}
 
-DockerIO日志事件指的是Docker中的输入输出日志所转化生成的事件。该类事件记录了Docker\cite{boettiger2015introduction}中的各种操作信息和容器中微服务应用运行时日志信息。在将这些日志聚类并编写人工模板后，人工模板被用来匹配日志信息以收集统计DockerIO日志事件类型。其中，由于不同分布式应用的微服务结构不同，且输出日志直接由开发人员编写的日志打印代码所决定，所以在两应用中得到的DockerIO事件类型有所不同。最终train-ticket应用中收集到69种DockerIO日志事件，而sock-shop应用中共收集到76种DockerIO日志事件。式\ref{dockerio-event}中列出了其中部分DockerIO日志事件类型名称。
+DockerIO日志事件指的是Docker中的输入输出日志所转化生成的事件。该类事件记录了Docker\cite{boettiger2015introduction}中的各种操作信息和容器中微服务应用运行时日志信息。在将这些日志聚类并编写人工模板后，人工模板被用来匹配日志信息以收集统计DockerIO日志事件类型。其中，因为不同分布式应用的微服务结构不同，且输出日志直接由开发人员编写的代码所决定，所以两应用中的DockerIO事件类型有所不同。最终train-ticket应用中收集到69种DockerIO日志事件，而sock-shop应用中共收集到76种DockerIO日志事件。式\ref{dockerio-event}中列出了部分DockerIO日志事件类型名称。
 \begin{equation}
     \begin{array}{l}
         java.lang.AbstractMethodError,\\
@@ -139,157 +145,376 @@ DockerIO日志事件指的是Docker中的输入输出日志所转化生成的事
 \end{equation}
 
 \section{事件因果关系判别实验}
-\textbf{数据标注}：本实验对数据集中的关系种类进行了标注，标注数据覆盖了每一种故障类型。其中对于每种故障类型，随机抽取了该类故障类型两个具体时间段的数据进行了标注，只对认为有因果关系的事件对标注为
-1，其余事件对默认无因果关系标注为0。最终标注为1的事件对共计286条，其余默认无关系的共计8,250,290‬条。数据集train-ticket、sock-shop的标注信息如下表\ref{event-cause-label}所示。由于正负样本数量级差距较大，后续选择了按照正样本：负样本为1：10的比例随机抽取了一批负样本数据用于训练。抽取出作为训练的数据包含正样本286条，负样本2860条。
-\begin{table}[htbp]
-    \caption{事件对因果关系标注数据集}
-    \centering
-    \label{event-cause-label}
-    \begin{tabular}{cccc}
-    \hline
-                 & 正例  & 负例      & 总计      \\ \hline
-    train-ticket & 121 & 3610827 & 3610948 \\
-    sock-shop    & 165 & 4639463 & 4639628 \\ \hline
-    总计           & 286 & 8250290 & 8250576 \\ \hline
-    \end{tabular}
-    \end{table}
+% % \subsection{数据标注}
+% % 本实验对数据集中的关系种类进行了标注，标注数据覆盖了每一种故障类型。其中对于每种故障类型，随机抽取了该类故障类型两个具体时间段的数据进行了标注，只对认为有因果关系的事件对标注为1，其余事件对默认无因果关系标注为0。
 
-\textbf{评测标准}：由于事件因果关系判别模型目的在于正确判别事件对之间的关系，所以本块实验以被标注的事件对关系被识别的精确率（Precision）、召回率（Recall）和F1值作为评测标准。计算公式如式\ref{relation-classifier-prf}所示。
-\begin{equation}
-    \begin{array}{c}
-    \text { precision }=\frac{\left|R_{\text {correct }}\right|}{|R_{\text {predict}}|} \\
-    \text { recall }=\frac{\left|R_{\text {correct }}\right|}{\left|R_{\text {label }}\right|} \mid \\
-    F 1=\frac{2 * \text { precision } * \text { recall }}{\text { precision }+\text { recall }}
-    \end{array}
-    \label{relation-classifier-prf}
-\end{equation}
+% % 由于事件因果判别模型是根据事件对统计特征发掘事件间因果关系，与事件来自何种应用无关，所以本块实验不区分事件来自于train-ticket还是sock-shop，直接把两个应用来源的标注事件对整合起来。最终标注为1的事件对共计286条，其余默认无关系的共计8,250,290‬条。数据集train-ticket、sock-shop的标注信息如下表\ref{event-cause-label}所示。由于正负样本数量级差距较大，后续选择了按照正负样本比1:10随机抽取了一批负样本数据用于训练。抽取出用于训练的数据共包含正样本286条，负样本2860条。
+% % \begin{table}[htbp]
+% %     \caption{事件对因果关系标注数据集}
+% %     \centering
+% %     \label{event-cause-label}
+% %     \begin{tabular}{cccc}
+% %     \toprule
+% %         分布式应用     & 正例  & 负例      & 总计      \\ \midrule
+% %     train-ticket & 121 & 3610827 & 3610948 \\
+% %     sock-shop    & 165 & 4639463 & 4639628 \\ \midrule
+% %     总计           & 286 & 8250290 & 8250576 \\ 
+% %     \bottomrule
+% %     \end{tabular}
+% % \end{table}
 
-其中$precision$、$recall$、$F1$分别代表精确率、召回率和F1值。$\left|R_{\text {correct }}\right|$为同时被标注存在因果关系且被判别为存在因果关系的事件对数，$|R_{\text {predict}}|$为模型判别为有因果关系的事件对数，$\left|R_{\text {label }}\right|$为被标注存在因果关系的事件对数。
+% % \subsection{评测标准}
+% % 由于事件因果关系判别模型目的在于正确判别事件对之间的关系，所以本块实验以被标注的事件对关系被识别的精确率（$precision$）、召回率（$recall$）和$F1$值作为评测标准。计算公式如式\ref{relation-classifier-prf}所示。
+% % \begin{equation}
+% %     \begin{array}{c}
+% %     precision =\frac{\left|R_{correct }\right|}{|R_{predict}|} \\
+% %      recall =\frac{\left|R_{correct }\right|}{\left|R_{label }\right|}  \\
+% %     F 1=\frac{2 \times  precision  \times  recall }{precision + recall }
+% %     \end{array}
+% %     \label{relation-classifier-prf}
+% % \end{equation}{\Huge } 
 
-\textbf{实验方法}：对于标注数据中的正样本286条、负样本2860条，随机抽取平分为5份，以便采用5折交叉验证方法。其中每份正样本数57，负样本数572。实验中选用了SVM、XGBoost、随机森林、逻辑回归和多层感知机共计五种模型进行了对比实验，以选出最优表现的分类模型。
+% % 其中$precision$、$recall$、$F1$分别代表精确率、召回率和F1值。$\left|R_{\text {correct }}\right|$为同时被标注存在因果关系且被判别为存在因果关系的事件对数，$|R_{\text {predict}}|$为模型判别为有因果关系的事件对数，$\left|R_{\text {label }}\right|$为被标注存在因果关系的事件对数。
 
-另外，为了验证本文扩展特征至6种对因果关系判别具有显著提升。实验又只保留了上述数据的“关系置信度”特征（基于条件概率的特征），并在该数据上对比了上述模型的表现。“all”表示使用了所有的6种特征，“probability based”表示只使用了基于条件概率的特征。
+% % \subsection{实验方法}
+% % 对于标注数据中的正样本286条、负样本2860条，随机抽取平分为5份，以便采用5折交叉验证方法。其中每份数据集中包含正样本数57，负样本数572。
 
-\textbf{实验结果}：实验统计了各个模型在进行5折交叉验证时，所计算得到的精确率、召回率和F1值，结果统计如表\ref{cause-relation-result}所示。从中可以看到SVM模型的精确率、召回率和F1值均达到了0.95以上，而随机森林、逻辑回归和XGBoost效果较差。另外，多层感知机召回率达到了1.0，而精确率值有0.89，可见其偏向于将数据都判别为正例，判别结果会出现过多的假阳。对比选用的数据特征，发现使用“all”（所有的6种特征）比只使用“probability based”（基于条件概率的特征）在所有模型上都取得了更好的效果，证明了本文将特征拓展后对因果关系判别具有显著提升。
-\begin{table}[]
-    \caption{各分类模型事件因果关系判别结果}
-    \centering
-    \label{cause-relation-result}
-    \begin{tabular}{ccccc}
-    \hline
-    模型      & 数据特征              & 精确率            & 召回率                           & F1             \\ \hline
-    SVM     & all               & \textbf{0.951} & 0.961                         & \textbf{0.956} \\
-    Xgboost & all               & 0.911          & 0.895                         & 0.903          \\
-    随机森林    & all               & 0.950          & 0.792                         & 0.864          \\
-    逻辑回归    & all               & 0.913          & 0.845                         & 0.878          \\
-    多层感知机   & all               & 0.892          & \textbf{1.0}                  & 0.943          \\ \hline
-    SVM     & probability based & 0.951          & 0.961                         & 0.956          \\
-    Xgboost & probability based & 0.911          & 0.895                         & 0.903          \\
-    随机森林    & probability based & 0.950          & 0.792                         & 0.864          \\
-    逻辑回归    & probability based & 0.913          & 0.845                         & 0.878          \\
-    多层感知机   & probability based & 0.892          & \textbackslash{}textbf\{1.0\} & 0.943          \\ \hline
-    \end{tabular}
-    \end{table}
+% % 本块实验根据文献\parencite{nie2016mining-causality-graph,qiu2020causality-mining-knowledge-graph}中的实验，选用了SVM、XGBoost、随机森林、逻辑回归和多层感知机共计五种模型进行了对比实验，以选出最优表现的分类模型。
+
+% % 另外，为了验证本文设计的6种事件特征对因果关系判别的提升（其中只有“关系置信度”为基于条件概率的特征），实验选用文献\parencite{nie2016mining-causality-graph}中总结的共计6条基于条件概率的特征进行对比，如表\ref{only-prob-feature}所示。“multi”表示使用了本文提出的6种特征，“probability based”表示只使用了基于概率的特征集。
+% % \begin{table}[htbp]
+% %     \caption{基于条件概率的特征集}
+% %     \centering
+% %     \label{only-prob-feature}
+% %     \begin{tabular}{cc}
+% %     \toprule
+% %     特征名    & 计算方式                  \\ \midrule
+% %     共现次数   & A，B共现次数               \\
+% %     关系置信度  & $P(B|A)$                \\
+% %     逆关系置信度 & $P(A|B)$                \\
+% %     Lift  & $P(AB)/((P(A) \cdot P(B)))$ \\
+% %     KULC   & $(P(A|B) + P(B|A))/2$   \\
+% %     IR     & $P(A)/(B)$              \\ 
+% %     \bottomrule
+% %     \end{tabular}
+% %     \end{table}
+
+% % \subsection{实验结果与分析}
+% % 实验统计了各个模型在进行5折交叉验证时，所计算得到的精确率、召回率和F1值，结果统计如表\ref{cause-relation-result}所示。对于每个模型，都尝试了多种超参数组合，最终通过网格搜索选择可使其达到最佳效果的超参数组合。
+
+% % 在表\ref{cause-relation-result}统计的结果中，SVM模型的精确率、召回率和F1值均达到了0.95以上，而随机森林、逻辑回归和XGBoost效果较差。多层感知机召回率达到了1.0，但精确率只有0.892，可见其偏向于将数据都判别为正例，判别结果会出现过多的假阳。在本实验中，SVM模型取得最佳效果时所设置的超参数组合为高斯核函数、$sigma=1$、松弛变量=5。
+
+% % 另外，对比选用的数据特征，发现使用“multi”比只使用“probability based”的特征在所有模型上都取得了更好的效果，证明了本文所设计的事件特征对因果关系判别效果有显著提升。
+% % \begin{table}[htbp]
+% %     \caption{各分类模型事件因果关系判别结果}
+% %     \centering
+% %     \label{cause-relation-result}
+% %     \begin{tabular}{ccccc}
+% %     \toprule
+% %     模型      & 选用数据特征              & 精确率            & 召回率                           & F1             \\ \midrule
+% %     SVM     & multi               & \textbf{0.951} & 0.961                         & \textbf{0.956} \\
+% %     XGBoost & multi               & 0.911          & 0.895                         & 0.903          \\
+% %     随机森林    & multi               & 0.950          & 0.792                         & 0.864          \\
+% %     逻辑回归    & multi               & 0.913          & 0.845                         & 0.878          \\
+% %     多层感知机   & multi               & 0.892          & \textbf{1.0}                  & 0.943          \\ \midrule
+% %     SVM     & probability based & 0.822          & 0.769                         & 0.795          \\
+% %     XGBoost & probability based & 0.779          & 0.756                         & 0.767          \\
+% %     随机森林    & probability based & 0.831          & 0.770                         & 0.799          \\
+% %     逻辑回归    & probability based & 0.782          & 0.754                         & 0.768          \\
+% %     多层感知机   & probability based & 0.739          & 0.816  & 0.776          \\ \bottomrule
+% %     \end{tabular}
+% % \end{table}
 
 \section{组件-事件知识图谱表示学习实验}
-\textbf{数据标注}：事件因果关系判别实验结束后，历史数据会首先按照故障类型分组，根据上小结实验，选用SVM模型从每类故障对应的历史数据中挖掘事件因果对，再按照章节\ref{graph-generate}所示步骤沉淀生成每类故障的组件-事件知识图谱。表\ref{kg-abstract-event-num}统计了两个分布式应用每类故障类型所对应组件-事件知识图谱的抽象事件实体数目及因果关系对数。随后的实验中，数据的输入形式为四元组$(graph,head,relation,tail)$，即输入三元组$(head,relation,tail)$及其所在上下文图结构$graph$。（todo:训练测试三元组数据）
+\subsection{数据标注}
+在事件因果关系判别实验结束后，为了如现实场景一样存在历史数据和实时数据，本文将模拟收集的数据进行了划分。具体上，模拟收集的所有数据会首先按照故障类型分组。然后，如表\ref{anomal-split}所示，每种故障类型下的时间段集合会被划分成历史故障数据和实时故障数据。根据上小结实验结果，本块实验选用SVM模型从每类故障对应的历史故障数据中挖掘事件因果对，再按照章节\ref{graph-generate}所示步骤沉淀生成每类故障的组件-事件知识图谱。由模型初步生成的知识图谱仍会有一些噪声数据，后续运维专家参与了知识图谱调优，保证了知识图谱质量。因为初步生成的知识图谱含有实体、关系量级低，所以知识图谱调优过程消耗人工较少。
+\begin{table}[htbp]
+    \caption{模拟数据划分}
+    \centering
+    \label{anomal-split}
+    \begin{tabular}{cccc}
+    \toprule
+                分布式应用 & \begin{tabular}[c]{@{}c@{}}模拟故障\\ 时间段总数\end{tabular} & \begin{tabular}[c]{@{}c@{}}历史故障\\ 时间段数\end{tabular} & \begin{tabular}[c]{@{}c@{}}实时故障\\ 时间段数\end{tabular} \\ \midrule
+    train-ticket & 471                                                  & 325                                                 & 146                                                 \\
+    sock-shop    & 539                                                  & 371                                                 & 168                                                 \\ \bottomrule
+    \end{tabular}
+\end{table}
+
 \begin{table}[htbp]
     \caption{各类故障对应知识图谱信息}
     \centering
     \label{kg-abstract-event-num}
     \begin{tabular}{cccc}
-    \hline
-    数据集          & 故障代号                                    & 知识库抽象事件节点数目 & 知识库因果关系数目 \\ \hline
-    train-ticket & f1                                      & 41          & 285       \\
-                 & f2                                      & 39          & 297       \\
-                 & f3                                      & 6           & 8         \\
-                 & f5                                      & 62          & 81        \\
-                 & f6                                      & 34          & 233       \\
-                 & f10                                     & 15          & 51        \\
-                 & f13                                     & 15          & 15        \\
-                 & f16                                     & 35          & 59        \\
-                 & f17                                     & 38          & 65        \\
-                 & f18                                     & 54          & 88        \\ \hline
-    sock-shop    & db\_goods\_disappeared                  & 20          & 86        \\
-                 & db\_cart\_disappeared                   & 70          & 638       \\
-                 & user\_unable\_log\_in                   & 52          & 180       \\
-                 & db\_order\_disappeared                  & 20          & 114       \\
-                 & order\_cart\_500                        & 9           & 8         \\
-                 & order\_count\_500                       & 55          & 536       \\
-                 & order\_payment\_500                     & 13          & 30        \\
-                 & user\_register\_500                     & 7           & 6         \\
-                 & cart\_disappeared                       & 4           & 5         \\
-                 & catalogue\_goods\_disappeared           & 6           & 7         \\
-                 & add\_cart\_delay                        & 30          & 57        \\
-                 & user\_register\_and\_log\_in\_delay     & 17          & 43        \\
-                 & check\_order\_delay                     & 102         & 598       \\
-                 & net\_loss\_check\_order                 & 92          & 614       \\
-                 & net\_loss\_add\_cart                    & 34          & 79        \\
-                 & net\_loss\_user\_register\_and\_log\_in & 17          & 55        \\
-                 & net\_loss\_goods\_appear\_delay         & 15          & 33        \\ \hline
+    \toprule
+    分布式应用          & 故障代号                                    & 抽象事件节点数目 & 抽象事件因果关系数目 \\ \midrule
+                 & f1                                      & 41       & 285        \\
+                 & f2                                      & 39       & 297        \\
+                 & f3                                      & 6        & 8          \\
+                 & f5                                      & 62       & 81         \\
+    train-ticket & f6                                      & 34       & 233        \\
+                 & f10                                     & 15       & 51         \\
+                 & f13                                     & 15       & 15         \\
+                 & f16                                     & 35       & 59         \\
+                 & f17                                     & 38       & 65         \\
+                 & f18                                     & 54       & 88         \\ \midrule
+                 & db\_goods\_disappeared                  & 20       & 86         \\
+                 & db\_cart\_disappeared                   & 70       & 638        \\
+                 & user\_unable\_log\_in                   & 52       & 180        \\
+                 & db\_order\_disappeared                  & 20       & 114        \\
+                 & order\_cart\_500                        & 9        & 8          \\
+                 & order\_count\_500                       & 55       & 536        \\
+                 & order\_payment\_500                     & 13       & 30         \\
+                 & user\_register\_500                     & 7        & 6          \\
+    sock-shop    & cart\_disappeared                       & 4        & 5          \\
+                 & catalogue\_goods\_disappeared           & 6        & 7          \\
+                 & add\_cart\_delay                        & 30       & 57         \\
+                 & user\_register\_and\_log\_in\_delay     & 17       & 43         \\
+                 & check\_order\_delay                     & 102      & 598        \\
+                 & net\_loss\_check\_order                 & 92       & 614        \\
+                 & net\_loss\_add\_cart                    & 34       & 79         \\
+                 & net\_loss\_user\_register\_and\_log\_in & 17       & 55         \\
+                 & net\_loss\_goods\_appear\_delay         & 15       & 33         \\ \bottomrule
     \end{tabular}
 \end{table}
 
-sock-shop 设备间关系 992  发生关系
-train-ticket 设备间关系 1469 发生关系
+\begin{table}[]
+    \caption{知识库三元组数目及划分}
+    \label{triple-split}
+    \begin{tabular}{cccccccc}
+    \toprule
+    分布式应用        & \begin{tabular}[c]{@{}c@{}}组件层\\ 三元组数\end{tabular} & \begin{tabular}[c]{@{}c@{}}组件-事件间\\ 三元组数\end{tabular} & \begin{tabular}[c]{@{}c@{}}事件层\\ 三元组数\end{tabular} & \begin{tabular}[c]{@{}c@{}}总\\ 三元组数\end{tabular} & 训练集  & 验证集 & 测试集 \\ \midrule
+    train-ticket & 1469                                               & 339                                                   & 1182                                               & 2990                                             & 1794 & 598 & 598 \\
+    sock-shop    & 1043                                               & 563                                                   & 3089                                               & 4695                                             & 2817 & 939 & 939 \\ \bottomrule
+    \end{tabular}
+    \end{table}
+\newpage
+表\ref{kg-abstract-event-num}统计了两个分布式应用每类故障类型所对应组件-事件知识图谱的抽象事件实体数目及抽象事件因果关系对数。在每张组件-事件知识图谱中，由于每个抽象事件实体都对应着一个组件实体，所以组件到抽象事件的发生关系数量与抽象事件节点数相等；由于组件层实体数量和关系数量只与分布式应用有关，所以每个组件-事件知识图谱的组件层关系数是恒定的。train-ticket组件层关系数为1469，sock-shop组件层关系数为1043。
+
+在知识图谱中，一个关系对应着一个三元组，所以直接将各个组件-事件知识图谱中的每个关系对应的三元组视作正样本，即将其标注为“成立”。其中组件层的关系不会重复使用，防止数据不均衡。表\ref{triple-split}为本块实验使用的正样本三元组数量，和按照6：2：2划分数据集的结果。另外，对于每一个正样本三元组，可以将其首实体或尾实体随机替换为不匹配的实体，构成负样本三元组，即“不成立”的三元组。
+% 随后的实验中，数据的输入形式为三元组$(head,relation,tail)$及其所在上下文图结构$graph$。
 
 
-\textbf{评测标准}：在组件-事件知识图谱表示学习模型评测方式中有两个被广泛使用的任务。
+\subsection{评测标准}
+在知识图谱表示学习模型评测方式中有两个被广泛使用的任务。
 
-任务1：链接预测，即预测三元组中丢失的头实体或尾实体。文献\parencite{bordes2011learning,bordes2013translatingE}定义链接预测为给定$(head,relation)$或$(relation,tail)$预测对应丢失的$tail$或$head$。在具体进行链接预测任务时，实验会排序候选实体集合，而不是直接给出最佳匹配实体。依据文献\parencite{bordes2013translatingE}的做法，对于每一个测试三元组$(head,relation,tail)$，实验中会使用知识图谱中任意不匹配$(relation,tail)$的实体来替换$head$，然后根据模型输出的匹配概率分数降序排列这些三元组。同样的，也可以重复上述过程来替换尾实体$tail$。在收集完所有三元组后，本文使用了两个衡量指标：正确实体的平均排名倒数（即MRR，mean reciprocal rank）；正确实体在前N名的占比（即Hits at n，H@n）。平均排名越小或Hits@N越大，都意味着表示模型效果越好。
+\textbf{任务1}：链接预测，即预测受损三元组中缺少的头或尾实体。文献\parencite{bordes2011learning,bordes2013translatingE}定义链接预测为给定$(head,relation)$或$(relation,tail)$预测对应丢失的$tail$或$head$。在具体进行链接预测任务时，实验会排序候选实体集合，而不是直接只输出一个最佳匹配实体。
 
-任务2：三元组分类，即判断给定的三元组是否是知识图谱中真实存在的。在三元组分类任务中，给定知识图谱$graph$和三元组$(head,relation,tail)$，需要判断它是否是正确的。该任务已经在已有的工作\parencite{bordes2013translatingE,wang2014knowledge,lin2015learning}中展开过，也被广泛的应用在很多自然语言处理场景，比如问答。
+具体上，依据文献\parencite{bordes2013translatingE}的做法，对于每一个测试三元组$(head,relation,tail)$，实验会使用实体集合中任意不匹配$(relation,tail)$（或$(head,relation)$）的实体来替换$head$（或$tail$）生成受损三元组，然后根据模型输出的三元组成立概率分数降序排列这些三元组。在获得所有三元组排名后，实验使用了两个衡量指标：正确实体的平均排名（即MR，mean rank）；正确实体在前N名的占比（即Hits at n，Hits@n）。MR越小，Hits@N越大，都意味着表示模型效果越好。另外，文献\parencite{bordes2013translatingE}发现生成的受损三元组可能是正确三元组，所以需要将该三元组筛选过滤掉。而本文中，由于知识图谱已被调优过，每个正确三元组都在对应$graph$中完备地存在着，当实体与$(relation,tail)$（或$(head,relation)$）不匹配时（不存在于组件-事件知识图谱中）意味着其生成的受损三元组一定是错误的，所以本块实验不需进行过滤操作。
+% 最终，train-ticket中每个正确三元组会生成1404个受损三元组，sock-shop中每个正确三元组会生成1238个受损三元组。
 
-链接预测时，输入候选实体和上下文信息，输出三元组成立的概率，成立概率值越大排名越高，再计算对应的MRR和Hits@N即可。三元组分类时，输入待测三元组及其上下文，输出该三元组是否成立，再计算准确率、精确率、召回率和F1值即可。
+\textbf{任务2}：三元组分类，即判断给定的三元组是否是知识图谱中真实存在的。在三元组分类任务中，给定知识图谱$graph$和三元组$(head,relation,tail)$，需要判断它是否是正确的。该任务已经在已有的工作\parencite{bordes2013translatingE,wang2014knowledge,lin2015learning}中展开过，也被广泛的应用在很多自然语言处理场景，比如问答。
+
+链接预测时，输入候选实体和上下文信息，输出三元组成立的概率，成立概率值越大排名越高，再计算对应的MR和Hits@N即可。三元组分类时，输入待测三元组及其上下文，输出该三元组是否成立，再计算精确率（precision）、召回率（recall）和F1值即可。
 
 
 % 我们首先对标准链路预测任务中的不同嵌入模型进行了比较研究，即预测不可见三胞胎的正确性。如（Bordes et al.，2013b）中所述，我们将链接预测作为实体排序任务。对于测试数据中的每个三元组，我们依次将每个实体作为要预测的目标实体。计算字典中正确实体和所有损坏实体的分数，并按降序排列。我们考虑平均倒数秩（MRR）（一个回答实体的倒数秩在所有测试三元组上的平均值），命中@10（前10名精度）和平均精度（MAP）（如（Chang等人，2014年）中所用）作为评估指标（from EMBEDDING ENTITIES AND RELATIONS FOR LEARN-
 % ING AND INFERENCE IN KNOWLEDGE BASES
 % ）
-\textbf{实验方法}：实验对比了多种代表性模型，分别如下：
-TereE[1]，trans[13]，TransR [7]，CTransR [7]，PTransE [6]和GAKE [3]。
+\subsection{实验方法}
+本块实验选取了多个对比方法以验证本文模型的优越性。实验记录了选取的每个方法在上小节两个评测任务上的表现指标。所选取的各个方法如下所示：
+\begin{itemize}
+    \item [(1)] 
+    \textbf{TransE}\cite{bordes2013translatingE}：TransE将每个三元组（head,relation,tail）中的relation视作从head到tail的翻译过程。
+    \item [(2)]
+    \textbf{TransH}\cite{wang2014knowledge}：TransH将头尾实体都投影到关系所在的张量空间中，可以解决复杂的一对多、多对多关系。
+    \item [(3)]
+    \textbf{TransR}\cite{lin2015learning}：TransR将关系也嵌入为矩阵，可以区分具有不同语义的关系。
+    \item [(4)]
+    \textbf{GAKE}\cite{feng2016gake}：GAKE引入邻居上下文、边上下文、路径上下文信息，可以捕获图结构的语义。
+    \item [(5)]
+    \textbf{TCE}\cite{shi2017knowledge}：TCE引入了两种结构信息，一种是实体的相邻实体，另一种是一对实体之间的关系路径。
+    \item [(6)]
+    \textbf{本文表示学习方法}：本文在章节\ref{chapter-3}所提出的组件-事件知识图谱表示学习模型。
+    \item [(7)]
+    \textbf{本文表示学习方法-1}：相比本文表示学习方法，去除了Attention-RGCN层的注意力机制。
+    \item [(8)]
+    \textbf{本文表示学习方法-2}：相比本文表示学习方法，去除实体分类模块的损失。
+    \item [(9)]
+    \textbf{本文表示学习方法-3}：相比本文表示学习方法，去除关系分类模块的损失。
+  \end{itemize}
 
-\textbf{实验结果}：4271
+其中，TransE、TransH和TransR将每个三元组视作一条独立的知识，用于对比验证引入上下文对表示学习的提升；GAKE、TCE引入上下文信息获取静态表示向量，用于对比验证动态表示学习的有效性；\textbf{本文表示学习方法-1}使用无attention机制的RGCN，用于对比验证本文在RGCN中引入注意力机制的提升；\textbf{本文表示学习方法-2}去除实体分类模块，用于对比验证引入实体类别信息对模型的提升；\textbf{本文表示学习方法-3}去除关系分类模块，用于对比验证关系类别信息对模型的提升。
 
+\subsection{实验结果与分析}
+在链接预测任务上，表\ref{link-predict-result}列出了各个方法的链路预测结果。\textbf{本文表示学习方法}在MR和Hit@5指标上都得到了比其他方法更好的实验结果。在三元组分类任务上，表\ref{triple-class-result}列出来各个方法的精确率（precision）、召回率（recall）和F1值。\textbf{本文表示学习方法}相较基线方法获得了5\%以上的F1值提升。实验结果证明了本文利用注意力机制的RGCN获取图结构上下文信息，再结合语义信息的动态表示学习方法，可以更好地嵌入表示组件-事件知识图谱。
 
-\section{基于知识图谱与实时事件序列的故障预测实验}
-\textbf{数据集构建}：在构建组件-事件知识图谱时，已经使用了一半的故障时间段数据，本处的故障预测实验选择使用剩下一半的故障时间段数据。由于每一个故障时间段都有对应的故障类型，所以此处不需要人工标注，直接将同一故障类型的知识图谱与事件序列视为相似，不同故障类型的知识图谱与事件序列视为不相似。
+对比\textbf{本文表示学习方法-1}、\textbf{本文表示学习方法-2}、\textbf{本文表示学习方法-3}，可发现图神经网络的注意力机制对模型的提升效果最大，其可以强化重要信息的传播、挖掘重要的图结构信息；实体、关系类别信息的引入也可以改善知识表示学习效果，其中实体类别信息比关系类别信息提升效果更高。
 
-由于故障预测任务是根据已发生的事件序列，预测可能会出现何种故障，所以对每一个实例时间段的事件序列选择去除其最后的故障事件，只保留故障发生前的异常事件序列。此外，每个时间段的事件序列长度不一致，而双向记忆网络模型的输入长度需要是确定的。所以，若记忆网路的输入长度为L，对于长度小于L的事件序列直接保留，对于长度长于L的事件序列进行随机采样N次生成N个新的长度为L事件序列。这样随机采样生成新事件序列的方式，使得模型具有了鲁棒性，即使面对完整事件序列的部分信息，也可以正确预测其可能发生的故障。
+另外，三元组分类任务上取得的精确率要比链接预测上Hits@5要高，原因在于三元组分类任务中每个“成立”的三元组都只生成$\omega$个“不成立”的受损三元组（本实验中$\omega$取100）；而链接预测任务中，每个正确三元组与平均约1000个受损三元组进行比较排序。
 
-最终获取到两数据集实时事件序列数目如表\ref{event-sequence-num}所示，并按照6:4划分了训练集和测试集。
+本块实验中，本文模型达到最佳效果时使用的超参为：嵌入层维度为100；Attention-RGCN为2层、中间隐状态维度为50、输出隐状态维度为100；图卷积网络输入窗口大小为128节点，隐状态维度为100，共计4层；实体分类器结构为$100*32*7$，7为实体种类数；关系分类器结构为$100*32*8$，8为关系种类数。
+% \begin{table}[htbp]
+%     \centering
+%     \caption{链接预测结果}
+%     \label{link-predict-result}
+%     \begin{tabular}{ccccc}
+%     \hline
+%     方法     & MRR         &             & HIT@10        & H10 raw       \\ \hline
+%     TransE & 125         & 243         & 47.1          & 34.9          \\
+%     TransH & 84          & 211         & 58.5          & 42.5          \\
+%     TransR & 77          & 198         & 68.7          & 48.2          \\
+%     GAKE   & 119         & 228         & 64.8          & 44.5          \\
+%     TCE    & 25          & 110         & 83.1          & 55.3          \\
+%     本文方法   & \textbf{17} & \textbf{86} & \textbf{85.4} & \textbf{59.4} \\
+%     本文方法-1 & 24          & 124         & 82.6          & 52.1          \\ \hline
+%     \end{tabular}
+% \end{table}
+% \begin{table}[htbp]
+%     \caption{链接预测结果}
+%     \centering
+%     \label{link-predict-result}
+%     \begin{tabular}{ccc}
+%     \hline
+%     方法     & MR                          & Hits@3                         \\ \hline
+%     TransE & 121                          & 48.3                           \\
+%     TransH & 83                           & 57.3                           \\
+%     TransR & 71                           & 66.2                           \\
+%     GAKE   & 76                           & 62.8                           \\
+%     TCE    & 32                           & 81.9                           \\
+%     本文方法   & \textbf{17} & \textbf{85.4} \\
+%     本文方法-1 & 24                           & 82.6                           \\ \hline
+%     \end{tabular}
+% \end{table}
 \begin{table}[htbp]
+    \caption{链接预测结果}
     \centering
-    \caption{实时事件序列数}
-    \label{event-sequence-num}
+    \label{link-predict-result}
     \begin{tabular}{ccccc}
-        \hline
-        数据集名称        & 初始事件序列数 & 随机采样后事件序列数 & 训练集 & 测试集 \\ \hline
-        Train-ticket & 235     & 532     & 323 & 209 \\
-        Sock-shop    & 214     & 595     & 363 & 232 \\ \hline
+    \toprule
+           & \multicolumn{2}{c}{train-ticket} & \multicolumn{2}{c}{sock-shop} \\
+    方法     & MR            & Hits@5           & MR           & Hits@5         \\ \midrule
+    TransE & 59            & 48.3             & 63           & 42.7           \\
+    TransH & 42            & 57.3             & 56           & 45.2           \\
+    TransR & 37            & 66.2             & 43           & 59.8           \\
+    GAKE   & 33            & 62.8             & 39           & 53.2           \\
+    TCE    & 23            & 81.9             & 31           & 78.1           \\
+    本文表示学习方法   & \textbf{9}    & \textbf{85.4}    & \textbf{13}  & \textbf{82.9}  \\
+    本文表示学习方法-1 & 26            & 79.5             & 34           & 67.6         \\ 
+    本文表示学习方法-2 & 19           & 82.2             & 30           & 78.4           \\ 
+    本文表示学习方法-3 & 16            & 83.6            & 24           & 81.2          \\ 
+    \bottomrule
     \end{tabular}
 \end{table}
 
-\textbf{评测标准}：最终的评测标准以测试集中事件序列分类到组件-事件知识图谱的精确率、召回率和F1值为准。
-
-\textbf{实验方法}：在模型训练过程中，每一个事件序列除了有其对应的相似组件-事件知识图谱$G_{pos}$，还需负采样任选一个不相似的组件-事件知识图谱$G_{neg}$。模型训练目标函数为最大化两者差距，即与相似组件-事件知识图谱的相似度$Sim_{pos}$要远大于与不相似的组件-事件知识图谱的相似度$Sim_{pos}$。在计算测量指标时，首先将事件序列与组件-事件知识图谱中每个图谱都做相似度计算，并按照相似度降序排列，将对应组件-事件知识图谱排序第一时视作正确的。(todo-超参数 对比实验)
-
-\textbf{实验结果}：实验中分别记录训练集和测试集的准确率、精确率、召回率和F1值，结果如表\ref{experiment-predict-train-test}所示，可见在两个数据集上模型的表现具有差别，主要原因在于
 \begin{table}[htbp]
-    \caption{模型训练和测试集效果}
+    \caption{三元组分类结果}
     \centering
-    \label{experiment-predict-train-test}
-    \begin{tabular}{lllllll}
+    \label{triple-class-result}
+    \begin{tabular}{ccccccc}
+    \toprule
+               &                & train-ticket   &                &                & sock-shop      &                \\
+    方法         & precision      & recall         & F1             & precision      & recall         & F1             \\ \midrule
+    TransE     & 0.650          & 0.692          & 0.670          & 0.653          & 0.626          & 0.639          \\
+    TransH     & 0.703          & 0.730          & 0.716          & 0.707          & 0.675          & 0.691          \\
+    TransR     & 0.743          & 0.716          & 0.730          & 0.680          & 0.701          & 0.690          \\
+    GAKE       & 0.781          & 0.749          & 0.765          & 0.722          & 0.742          & 0.732          \\
+    TCE        & 0.804          & 0.783          & 0.793          & 0.736          & 0.769          & 0.752          \\
+    本文表示学习方法   & \textbf{0.864} & \textbf{0.837} & \textbf{0.850} & \textbf{0.836} & \textbf{0.814} & \textbf{0.825} \\
+    本文表示学习方法-1 & 0.763          & 0.816          & 0.788          & 0.776          & 0.746          & 0.761          \\
+    本文表示学习方法-2 & 0.826          & 0.801          & 0.813          & 0.783          & 0.808          & 0.795          \\
+    本文表示学习方法-3  & 0.845          & 0.822          & 0.834          & 0.788          & 0.810           & 0.799          \\ \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{基于知识图谱与实时事件序列的故障预测实验}
+\subsection{数据标注}
+在构建组件-事件知识图谱时，表\ref{anomal-split}中的历史故障时间段数据已经被使用。本处的故障预测实验选择使用实时故障时间段数据。由于每一个故障时间段都有对应的故障类型，所以此处不需要人工标注，直接将同一故障类型的组件-事件知识图谱与事件序列视为相似，不同故障类型的知识图谱与事件序列视为不相似即可。
+
+由于故障预测任务是根据已发生的事件序列，预测可能会出现何种故障，所以对每一个实例时间段的事件序列选择去除其最后的故障事件，只保留故障发生前的异常事件序列。另外，每个时间段的事件序列长度不一致，而双向记忆网络模型的输入长度需要是确定的。所以，若记忆网路的输入长度为L，对于长度小于L的事件序列填零补全至L，对于长度长于L的事件序列只保留前L个事件。
+
+本文用于故障预测的事件序列数较少，两应用中分别有146和168条。为了扩增数据量，首先，实验将每类故障下的事件序列数按照6：2：2进行划分得到训练集、验证集、测试集；随后，遍历事件序列中每个事件，选择随机保留或去除（事件关键性越高，被保留的概率越高；反之，越低），这样遍历一次保留下来的事件序列视作随机采样得到的一条新数据；最后，对每一条事件序列随机采样9次，完成数据增强。这样随机采样生成新事件序列的方式，不仅扩充了数据，也使得模型具有了鲁棒性。模型即使利用实时产生的部分事件序列信息，也可以正确预测其可能发生的故障。最终，用于故障预测的实时事件序列数目如表\ref{event-sequence-num}所示。
+% \begin{table}[htbp]
+%     \centering
+%     \caption{实时事件序列数}
+%     \label{event-sequence-num}
+%     \begin{tabular}{ccccc}
+%         \hline
+%         数据集名称        & 初始事件序列数 & 随机采样后事件序列数 & 训练集 & 测试集 \\ \hline
+%         Train-ticket & 235     & 532     & 323 & 209 \\
+%         Sock-shop    & 214     & 595     & 363 & 232 \\ \hline
+%     \end{tabular}
+% \end{table}
+\begin{table}[htbp]
+    \caption{实时事件序列数}
+    \centering
+    \label{event-sequence-num}
+    \begin{tabular}{ccccc}
+    \toprule
+    分布式应用        & \begin{tabular}[c]{@{}c@{}}初始\\ 事件序列数\end{tabular} & \begin{tabular}[c]{@{}c@{}}随机采样扩展后\\ 训练集\end{tabular} & \begin{tabular}[c]{@{}c@{}}随机采样扩展后\\ 验证集\end{tabular} & \begin{tabular}[c]{@{}c@{}}随机采样扩展后\\ 测试集\end{tabular} \\ \midrule
+    train-ticket & 146                                                & 870                                                   & 290                                                   & 300                                                   \\
+    sock-shop    & 168                                                & 1000                                                  & 330                                                   & 350                                                   \\ \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{评测标准}
+
+本文将实时事件序列与组件-事件知识图谱进行匹配，等同于将实时事件序列按故障类型做多分类。因此，最终的评测标准以测试集中事件序列分类到组件-事件知识图谱的精确率（precision）、召回率（recall）和F1值为指标。本处多分类的精确率、召回率和F1值的计算方式为：分别计算各类别的precision、recall和F1，再取均值。
+
+\subsection{实验方法}
+
+在模型训练过程中，每一个事件序列除了有其对应的相似组件-事件知识图谱$G_{pos}$，还需负采样任选一个不相似的组件-事件知识图谱$G_{neg}$。模型训练目标函数为最大化两者差距，即与相似组件-事件知识图谱的匹配度评分$Sim_{pos}$要远大于与不相似的组件-事件知识图谱的匹配度评分$Sim_{neg}$。在计算测量指标时，首先将事件序列与组件-事件知识库中每个图谱都做匹配度评分计算，并按照匹配度评分降序排列。由于实验数据中类别都只有十余种，所以只在对应组件-事件知识图谱匹配度评分$Sim_{pos}$排序第一时视作分类正确。为了验证本文基于记忆网络和知识图谱的故障预测模型的性能表现，实验选用了以下几种方法对比：
+\begin{itemize}
+    \item [(1)] 
+    \textbf{PREPARE}\cite{tan2012prepare}：PREPARE结合了属性值预测模型和多变量分类模型进行故障预测。属性值预测模型可以估计属性在未来时间的值分布。多变量分类模型可以计算一组估计的未来属性值映射成“正常”或“异常”状态的概率。具体实现上，该方法使用了马尔可夫模型进行属性值预测，使用了贝叶斯网络进行分类。本块实验将贝叶斯网改为多分类，以和其他方法进行对比。
+    % \item [(2)]
+    % \textbf{HMM}\cite{purushotham2005multi}：该方法基于隐马尔可夫模型判断当前组件是否存在会导致未来故障的错误状态来实现故障预测。本块实验在其后添加感知机和$softmax$层，将其改为多分类，以和其他方法进行对比。
+    \item [(2)]
+    \textbf{RNN}\cite{xu2016health}：使用循环神经网络编码事件序列，再多分类到故障类型。
+    \item [(3)]
+    \textbf{LSTM}\cite{cheng2018machine,du2017deeplog,das2018desh,islam2017predicting,li2020predicting}：使用长短期记忆网络编码事件序列，再多分类到故障类型。
+    \item [(4)]
+    \textbf{Bi-LSTM}\cite{gao2020task}：使用双向长短期记忆网络编码事件序列，再多分类到故障类型。
+    \item [(5)]
+    \textbf{本文故障预测方法}：本文在章节\ref{chapter-4}所提出的基于双向长短期记忆网络和知识图谱的故障预测模型。
+    \item [(6)]
+    \textbf{本文故障预测方法-1}：相比本文方法，去除了知识图谱对事件序列的attention机制。
+    \item [(7)]
+    \textbf{本文故障预测方法-2}：相比本文方法，使用RNN替换了BiLSTM。
+    \item [(8)]
+    \textbf{本文故障预测方法-3}：相比本文方法，使用LSTM替换了BiLSTM。
+
+\end{itemize}
+
+其中，PREPARE、RNN、LSTM和BiLSTM为已有代表性工作所使用的方法，在本实验中作为基线模型。为了对比各个模型，本块实验将RNN、LSTM和BiLSTM都后接了多层感知机和$softmax(.)$层进行多分类。\textbf{本文故障预测方法-1}用于验证知识图通过注意力机制可以选取有效信息，提升预测效果；\textbf{本文故障预测方法-2}用于验证在编码事件序列时BiLSTM比RNN效果更好；\textbf{本文故障预测方法-3}用于验证在编码事件序列时BiLSTM比LSTM效果更好。
+
+\subsection{实验结果与分析}
+\begin{table}[htbp]
+    \caption{故障预测结果}
+    \centering
+    \label{anom-predict}
+    \begin{tabular}{ccccccc}
     \hline
-    数据集名称        & 划分数据集 & LOSS & Accuary & F1     & Pecision & Recall \\ \hline
-    Train-ticket & 训练集   & 2907 & 1       & 1      & 1        & 1      \\
-                 & 测试集   & 360  & 0.9234  & 0.9175 & 0.9385   & 0.9037 \\ \hline
-    Sock-shop    & 训练集   & 6284 & 1       & 0.9412 & 1        & 1      \\
-                 & 测试集   & 683  & 0.875   & 0.8612 & 0.887    & 0.8475 \\ \hline
+               &                & train-ticket   &                &                & sock-shop      &                \\
+    方法         & precision      & recall         & F1             & precision      & recall         & F1             \\ \hline
+    PREPARE    & 0.732          & 0.727          & 0.728          & 0.689          & 0.677          & 0.679          \\
+    RNN        & 0.765          & 0.757          & 0.759          & 0.703          & 0.688          & 0.691          \\
+    LSTM       & 0.789          & 0.761          & 0.772          & 0.719          & 0.691          & 0.701          \\
+    BiLSTM     & 0.807          & 0.792          & 0.796          & 0.747          & 0.780          & 0.759          \\
+    本文故障预测方法       & \textbf{0.939} & \textbf{0.904} & \textbf{0.918} & \textbf{0.887} & \textbf{0.848} & \textbf{0.861} \\
+    本文故障预测方法-1 & 0.904          & 0.892          & 0.896          & 0.842          & 0.831          & 0.832          \\
+    本文故障预测方法-2 & 0.841          & 0.815          & 0.823          & 0.787          & 0.776          & 0.782          \\
+    本文故障预测方法-3 & 0.879          & 0.887          & 0.878          & 0.825          & 0.813          & 0.814          \\ \hline
     \end{tabular}
     \end{table}
+实验记录了各个方法的精确率、召回率和F1值，结果如表\ref{anom-predict}所示。可见\textbf{本文故障预测方法}取得了最佳的精确率、召回率和F1值，证明了本文模型的优质性。PREPARE、RNN、LSTM和BiLSTM相比其他方法效果都较差，证明了引入知识图谱会显著提升故障预测效果。\textbf{本文故障预测方法-1}不如\textbf{本文故障预测方法}的效果，证明了注意力机制提升了故障预测效果。\textbf{本文故障预测方法-3}比\textbf{本文故障预测方法}效果差，说明了编码事件序列特征方面，LSTM不如BiLSTM。\textbf{本文故障预测方法-2}比\textbf{本文故障预测方法-3}效果更差，表明了RNN比LSTM、BiLSTM在编码事件序列时效果更差。
+
+本块实验中，输入嵌入层和Attention-RGCN层设置为上一章\ref{chapter-4}中组件-事件知识图谱表示学习模型的结构与参数，并固定不变。本块实验效果达到最佳时，模型选用的超参数为BiLSTM层为2层、输入序列长度为1024、中间隐状态为50；序列分类器层为$100*32*2$的神经网络加$softmax(.)$层。
+% \begin{table}[htbp]
+%     \caption{模型训练和测试集效果}
+%     \centering
+%     \label{experiment-predict-train-test}
+%     \begin{tabular}{ccccccc}
+%     \hline
+%     数据集名称        & 划分数据集 & LOSS & Accuary & F1     & Pecision & Recall \\ \hline
+%     Train-ticket & 训练集   & 2907 & 1       & 1      & 1        & 1      \\
+%                  & 测试集   & 360  & 0.9234  & 0.9175 & 0.9385   & 0.9037 \\ \hline
+%     Sock-shop    & 训练集   & 6284 & 1       & 0.9412 & 1        & 1      \\
+%                  & 测试集   & 683  & 0.875   & 0.8612 & 0.887    & 0.8475 \\ \hline
+%     \end{tabular}
+%     \end{table}
+
 \section{本章小结}
-本章主要介绍了针对前面各章所述模型的实验实施。在事件因果关系挖掘模块，实验对比了多种机器学习模型，并对比了只依据概率特征和依据本文6种特征的表现，最终取F1值最高的SVM作为最终的因果判别模型；在组件-事件知识图谱表示学习模块，实验对比了已有工作中的模型和本文提出模型，实验效果表明本文引入图传播模型作为编码器生成事件动态嵌入表示的方法在链接预测和三元组分类任务上都取得了最佳效果；在故障预测部分，实验对比了相关工作的模型和本文模型，实验效果表明在本文表示学习模型基础上再引入知识图谱会取得最佳的预测效果。下一章将介绍基于本文已提出模型所设计的IT运维辅助系统。
+本章主要介绍了针对前面各章所述模型的实验实施。在事件因果关系挖掘模块，实验对比了多种机器学习模型，并对比了只依据概率特征和依据本文6种特征的表现，最终取F1值最高的SVM作为最终的因果判别模型；在组件-事件知识图谱表示学习模块，实验对比了已有工作中的模型、本文提出的模型和基于本文模型的退化版，实验效果表明本文引入图传播模型作为编码器生成事件动态嵌入表示的方法在链接预测和三元组分类任务上都取得了最佳效果；在故障预测部分，实验对比了相关工作的模型、本文模型和基于本文模型的退化版，实验效果表明在本文表示学习模型基础上再引入知识图谱会取得最佳的故障预测效果。下一章将介绍基于本文已提出模型所设计的IT运维辅助系统。
 
 
 
