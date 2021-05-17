@@ -1,6 +1,6 @@
 % \documentclass[algorithmlist, figurelist,tablelist, nomlist, master, onside]{config/seuthesiY}
 % \documentclass[figurelist,tablelist, nomlist, engineering, openany]{config/seuthesiY}
-\documentclass[engineering, openany]{config/seuthesiY}
+\documentclass[figurelist,tablelist,nomlist,engineering, openany]{config/seuthesiY}
 % \documentclass[ engineering, openany]{config/seuthesiY}
 %===============================================================================
 % 采用的编译方式为  XELATEX -→  BIBER -→    XELATEX -→    XELATEX
@@ -12,6 +12,7 @@
 \usepackage{geometry}
 % \geometry{textwidth=14.5cm,top=2.43cm,bottom=3cm,lmargin=3.21cm,
 %       rmargin=2.73cm,bindingoffset=0.25in,heightrounded}
+% \geometry{lmargin=2.54cm,rmargin=2.54cm}
 \usepackage{blindtext}
 % %biblatex宏包的参考文献数据源加载方式
 \addbibresource[location=local]{config/seuthesiY.bib}
@@ -23,8 +24,9 @@
 \captionsetup{labelsep=twospace}
 
 \newtheorem{definition}{Definition}
-% \setlength{\baselineskip}{20pt}
+% \setlength{\baselineskip}{20pt}%固定行距
 \linespread{1.25}%修改行距
+% \hypersetup{colorlinks=true,linkcolor=black,citecolor=black} %颜色设置
 \begin{document}
 \begin{sloppypar}
 \input{chapter/abstract.tex}
@@ -32,25 +34,25 @@
 \mainmatter
 
 \input{chapter/Intro.tex}
+\input{chapter/background.tex}
 \input{chapter/construct.tex}
 \input{chapter/representation.tex}
 \input{chapter/predicterror.tex}
-\input{chapter/experiment.tex}
 \input{chapter/system.tex}
 \input{chapter/conclusion.tex}
 \backmatter
 %打印参考文献表
-\input{chapter/acknowledge.tex}
+% \input{chapter/acknowledge.tex}
 \thesisbib
 
 \appendix
 
 
-\resume{作者攻读硕士学位期间的研究成果}
-\begin{flushleft}
-    {\bfseries \large 发表的论文}\\ \relax
-    [1] 智能运维中事件知识图谱的构建与事件表示学习[J].东南大学计算机科学与工程学院学术论坛，2018.（第一作者）\\
-\end{flushleft}
+% \resume{作者攻读硕士学位期间的研究成果}
+% \begin{flushleft}
+%     {\bfseries \large 发表的论文}\\ \relax
+%     [1] 智能运维中事件知识图谱的构建与事件表示学习[J].东南大学计算机科学与工程学院学术论坛，2021.（第一作者）\\
+% \end{flushleft}
 
 \end{sloppypar}
 \end{document}

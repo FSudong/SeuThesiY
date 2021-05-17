@@ -1,39 +1,63 @@
 %===============================================================================
+%非盲审
+% \categorynumber{TP311} % 分类采用《中国图书资料分类法》
+% \UDC{004.6}            %《国际十进分类法UDC》的类号
+% \secretlevel{公开}    %学位论文密级分为"公开"、"内部"、"秘密"和"机密"四种
+% \studentid{184607}   %学号要完整，前面的零不能省略。
+% \title{基于知识图谱的IT运维辅助系统设计与实现}{基于知识图谱的 \rotatebox{270}{IT} 运维辅助系统设计与分析}{}{}{Design and Implementation of IT Operation and Maintenance Assistant System Based on Knowledge Graph}{}
+% \author{方苏东}{FANG Sudong}
+% \advisor{漆桂林}{教授}{QI Guilin}{Prof.}
+% \coadvisor{丁岩}{高工}{DING Yan}{Ir.} % 没有% 可以不填
+% \degreetype{工程硕士}{Master of Engineering} % 详细学位名称
+% \major{软件工程}
+% \submajor{软件工程}
+% \defenddate{\today}
+% \authorizedate{\today}
+% \committeechair{}
+% \reviewer{}{}
+% \department{东南大学软件学院}{SouthEast University}
+% 盲审
 \categorynumber{TP311} % 分类采用《中国图书资料分类法》
 \UDC{004.6}            %《国际十进分类法UDC》的类号
 \secretlevel{公开}    %学位论文密级分为"公开"、"内部"、"秘密"和"机密"四种
-\studentid{184607}   %学号要完整，前面的零不能省略。
-\title{基于知识图谱的IT运维辅助系统的设计与分析}{基于知识图谱的 \rotatebox{270}{IT} 运维辅助系统的设计与分析}{}{}{Design and Analysis of IT Operation and Maintenance Assistant System based on Knowledge Graph}{}
-\author{方苏东}{FANG Sudong}
-\advisor{漆桂林}{教授}{QI Guilin}{Prof.}
-\coadvisor{丁岩}{高工}{DING Yan}{Ir.} % 没有% 可以不填
+\studentid{***}   %学号要完整，前面的零不能省略。
+\title{基于知识图谱的IT运维辅助系统设计与实现}{基于知识图谱的 \rotatebox{270}{IT} 运维辅助系统设计与分析}{}{}{Design and Implementation of IT Operation and Maintenance Assistant System Based on Knowledge Graph}{}
+\author{***}{***}
+\advisor{***}{教授}{***}{Prof.}
+\coadvisor{***}{高工}{***}{Ir.} % 没有% 可以不填
 \degreetype{工程硕士}{Master of Engineering} % 详细学位名称
 \major{软件工程}
 \submajor{软件工程}
 \defenddate{\today}
 \authorizedate{\today}
-\committeechair{}
-\reviewer{}{}
+\committeechair{***}
+\reviewer{***}{***}
 \department{东南大学软件学院}{SouthEast University}
+
+
+
 % \seuthesisthanks{本课题的研究来自于与阿里云合作项目}
 % \makebigcover
+
 \makecover
 \begin{abstract}{故障预测，IT运维，知识图谱，表示学习}
-    随着互联网技术的迅猛发展，目前大多数应用软件都建立在一个庞大、繁杂、跨协议层的大型分布式集群中。这类分布式集群的技术、软件、配置通常会不断地演变，难以避免会发生故障。面对海量的监控数据和庞大的系统，IT（Information Technology）运维人员很难做出迅速、准确的运维决策来预防解决各种故障。智能运维 （Artificial Intelligence for IT Operations，AIOps）旨在借助人工智能技术辅助IT运维人员提升运维效率。
-    
+    随着互联网技术的迅猛发展，目前大多数应用软件都建立在一个庞大、繁杂、跨协议层的大型分布式集群中。这类分布式集群的技术、软件、配置通常会不断地演变，难以避免会发生故障。面对海量的监控数据和庞大的系统，IT（Information Technology）运维人员很难做出迅速、准确的运维决策来应对各种故障。近年来，智能运维 （Artificial Intelligence for IT Operations，AIOps）通过引入人工智能技术，提升了IT运维效率。
     % 已有的AIOps方案使用历史数据训练感知机、贝叶斯网、随机森林等机器学习模型，用于异常检测、异常分类、故障预测等以辅助运维，均只停留在算法层面，对知识表示和推理的积累比较少。在AIOps中引入知识图谱能够结构化整合多源异构数据，规范化展示系统运行状态。知识图谱也可以把人对系统的认知、过往的运维经验沉淀成计算机可表示积累的数据，并作为先验知识来辅助运维。另外，知识图谱中经过严格定义的结构化数据使其具备一定的推理与诊断能力，从而辅助IT运维人员进行线上诊断、故障预测等。
-    已有的AIOps方案均停留在算法层面，仅使用历史数据训练机器学习模型，却忽略了历史数据中蕴含的运维知识。这些运维知识，不仅能够解释故障产生过程，还具有通用性能够指导运维。知识图谱可以结构化整合这些历史数据中的知识，进一步辅助线上诊断、故障预测等运维工作。
+    % 停留在算法层面，仅使用历史数据训练机器学习模型，却忽略了历史数据中蕴含的运维知识。这些运维知识，不仅能够解释故障产生过程，还具有通用性能够指导运维。知识图谱可以结构化整合这些历史数据中的知识，进一步辅助线上诊断、故障预测等运维工作。
+    
+    然而，在实际场景中，IT运维依然面临着三个问题：多源异构数据难以整合、运维知识表示不足和故障难以准确预知。首先，已有的运行状态监测模型都只能整合片面的数据，导致沉淀的运维知识也是片面的。其次，传统的运维知识表示方法局限于知识的显示结构，忽略了运维知识的深层含义。此外，现有的故障预测方法没有引入运维知识，预测结果缺乏可解释性，可靠性低。
+    
+    基于此，本文提出了有效解决上述问题的IT运维辅助技术，主要包括：    
 
-    本文主要研究了基于知识图谱的IT运维技术，主要工作如下：    
+    （1）提出了自动化构建组件-事件知识图谱的方法，整合了横跨硬件、软件、日志和运行指标的所有数据，使用了机器学习模型生成组件-事件知识图谱，减少了知识图谱构建的人工消耗。
 
-    （1）提出了自动化构建组件-事件知识图谱的方法，利用机器学习模型发掘事件间因果关系，从历史数据沉淀出了与故障类型对应的组件-事件知识图谱，减少了知识图谱构建的人工消耗。
+    （2）提出了组件-事件知识图谱的表示学习模型，考虑了实体在不同上下文中含义不同，把实体表示分为了语义表示和结构表示，实现了实体随上下文变化的动态表示，在组件-事件知识图谱三元组分类和链接预测任务上取得了最好的效果。
 
-    （2）提出了组件-事件知识图谱的表示学习模型，考虑了实体在不同上下文中含义不同，把实体表示分为了语义表示和结构表示，实现了实体随上下文动态地表示，在组件-事件知识图谱三元组分类和链接预测任务上取得了最好的效果。
-
-    （3）提出了引入组件-事件知识图谱的故障预测模型，利用各类故障对应的知识图谱识别事件序列中的关键信息，把最匹配事件序列的知识图谱作为预测结果，提高了预测结果的细粒度，增强了可解释性。
+    （3）提出了引入组件-事件知识图谱的故障预测模型，利用知识图谱识别事件序列中的关键信息，预测出最匹配的故障类型，提高了预测结果的细粒度，增强了可解释性。
 
     （4）基于上述工作，设计并实现了一个基于知识图谱的IT运维辅助系统。
-
+    
+    综上所述，本文利用历史数据自动化构建了知识图谱，提出了针对该类知识图谱的表示学习模型，并将知识图谱引入到了故障预测中，最终设计并实现了一个基于知识图谱的IT运维辅助系统。
     % \begin{itemize}
     %     \item [（1）] 
     %     提出了自动化构建组件-事件知识图谱的方法，设计了6种事件特征，训练了机器学习分类模型判别事件间有无因果关系，进而从历史数据沉淀出了与故障类型对应的组件-事件知识图谱，减少了知识图谱构建的人工消耗。   
@@ -70,26 +94,52 @@
 % \end{englishabstract}
 
 \begin{englishabstract}{Failure Prediction, IT operation and maintenance, Knowledge Graph, Knowledge Graph Embedding}
-With the rapid development of internet technology, most applications are built in a large, complicated and distributed cluster across protocol layers. The technology, software and configuration of this kind of distributed cluster are always evolving, and it is difficult to avoid failures. Faced with massive monitoring data and huge systems, it is difficult for IT (Information Technology) operation and maintenance personnel to make quick and accurate operation and maintenance decisions to prevent and solve various failures. Artificial intelligence for IT operations (AIOps) aims to assist IT operation and maintenance personnel to improve operation and maintenance efficiency by means of artificial intelligence technology. 
+With the rapid development of internet technology, most applications are built in a large, complicated and distributed cluster across protocol layers. The technology, software and configuration of this kind of distributed cluster are always evolving, and it is difficult to avoid failure. Faced with massive monitoring data and huge systems, it is difficult for IT(Information Technology) operation and maintenance personnel to make quick and accurate operation and maintenance decisions to deal with various failures. In recent years, Artificial Intelligence for IT Operations (AIOps) has improved the efficiency of IT operation and maintenance by introducing artificial intelligence technology. 
 
-Existing AIOps schemes all stay at the algorithm level, only use historical data to train machine learning models, but ignore trhe operation and maintenance knowledge contained in historical data. This knowledge of operation and maintenance can not only explain the process of fault generation, but also be universal and guide operation and maintenance. Knowledge graph can integrate the knowledge in these historical data structurally, and then further assist the operation and maintenance work such as online diagnosis and fault prediction. 
+However, in the actual scene, IT operation and maintenance still faces three problems: it is difficult to integrate multi-source heterogeneous data, insufficient representation of operation and maintenance knowledge and it is difficult to accurately predict faults. First of all, the existing operational status monitoring models can only integrate one-sided data, which leads to one-sided operation and maintenance knowledge. Secondly, the traditional representation method of operation and maintenance knowledge is limited to the display structure of knowledge, which neglects the deep meaning of operation and maintenance knowledge. In addition, the existing fault prediction methods do not use operation and maintenance knowledge, and the prediction results are lack of interpretability and reliability.
 
-This paper mainly studies the IT operation and maintenance technology based on knowledge graph. The main work is as follows: 
+Based on this, this paper proposes an IT operation and maintenance assistant technology to effectively solve the above problems, which mainly includes: 
 
-(1) The method of automatically constructing component-event knowledge graph is proposed, and the causal relationship between events is discovered by machine learning model, and the component-event knowledge graph corresponding to fault types is precipitated from historical data, which reduces the labor consumption of constructing knowledge graph. 
+(1) A method of building component-event knowledge graph automatically is proposed, which integrates all types of data across hardware, software, logs and operation indicators, and uses machine learning model to generate component-event knowledge graph, thus reducing the labor consumption of building knowledge graph.
 
-(2) A representation learning model of component-event knowledge graph is proposed. Considering the different meanings of entities in different contexts, entity representation is divided into semantic representation and structural representation, which realizes the dynamic representation of entities with context, and achieves the best results in the task of triple classification and link prediction of component-event knowledge graph.
+(2) A representation learning model of component-event knowledge graph is proposed. Considering the different meanings of entity in different contexts, entity representation is divided into semantic representation and structural representation, which realizes the dynamic representation of entity changing with context, and achieves the best results in component-event knowledge graph triple classification and link prediction tasks. 
 
-(3) A fault prediction model with component-event knowledge graph is proposed, which uses the knowledge graphs corresponding to various faults to identify the key information in the event sequence, and takes the knowledge graph that best matches the event sequence as the prediction result, thus improving the fine granularity of the prediction result and enhancing the interpretability.
+(3) A fault prediction model based on component-event knowledge graph is proposed. The key information in event sequence is identified by knowledge graph, and the most matching fault type is predicted, which improves the fine granularity of prediction results and enhances the interpretability. 
 
-(4) Based on the above work, an IT operation and maintenance assistant system based on knowledge graph is designed and implemented.
-
+(4) Based on the above work, an IT operation and maintenance assistant system based on knowledge graph is designed and implemented. 
+    
+To sum up, this paper uses historical data to build knowledge graph automatically, puts forward a representation learning model for this kind of knowledge graph, introduces knowledge graph into fault prediction, and finally designs and implements an IT operation and maintenance assistant system based on knowledge graph.
 \end{englishabstract}
 \setnomname{缩略词表}
 \tableofcontents
 \listofothers
 %===============================================================================
 
+% \begin{thenomenclature} 
+%     \nomgroup{A}
+%         \item [{IT}]\begingroup Information Technology\nomeqref {1.0}\nompageref{6}
+%         \item [{Ops}]\begingroup Operations\nomeqref {1.0} \nompageref{6}
+%         \item [{AIOps}]\begingroup Artificial Intelligence for IT Operations\nomeqref {1.0}  \nompageref{6}
+%         \item [{API}]\begingroup Application Programming Interface\nomeqref {1.0}\nompageref{6}
+%         \item [{KPI}]\begingroup Key Performance Indicators\nomeqref {1.0}\nompageref{6}
+%         \item [{SLB}]\begingroup Server Load Balancer\nomeqref {1.0} \nompageref{6}
+      
+%         \item [{ECS}]\begingroup Elastic Compute Service\nomeqref {1.0} \nompageref{6}
+%         \item [{RNN}]\begingroup Recurrent Neural Networks\nomeqref {1.0} \nompageref{6}
+%         \item [{LSTM}]\begingroup Long Short-Term Memory\nomeqref {1.0} \nompageref{6}
+%         \item [{BiLSTM}]\begingroup Bi-directional Long Short-Term Memory\nomeqref {1.0} \nompageref{6}
+%         \item [{SVM}]\begingroup Support Vector Machines\nomeqref {1.0} \nompageref{6}
+%         \item [{RGCN}]\begingroup Relational Graph Convolutional Networks\nomeqref {1.0} \nompageref{6}
+%         \item [{VPC}]\begingroup Virtual Private Cloud\nomeqref {1.0} \nompageref{6}
+%         \item [{DTW}]\begingroup Dynamic Time Warping\nomeqref {1.0} \nompageref{6}
+%         \item [{k8s}]\begingroup kubeneters\nomeqref {1.0} \nompageref{6}
+%         \item [{MR}]\begingroup mean rank\nomeqref {1.0} \nompageref{6}
+%         \item [{Hits@n}]\begingroup Hits at n\nomeqref {1.0} \nompageref{6}
+%         \item [{HSMM}]\begingroup Hidden Semi-Markov Model\nomeqref {1.0} \nompageref{6}
+%         \item [{B/S}]\begingroup Browser/Server\nomeqref {1.0} \nompageref{6}
+%         \item [{SLS}]\begingroup Log Service\nomeqref {1.0} \nompageref{6}
+
+% \end{thenomenclature}
 
 
 % 摘要 版本v1

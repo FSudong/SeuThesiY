@@ -1,7 +1,10 @@
 \chapter{组件-事件知识图谱构建}
-本章主要介绍了组件-事件知识图谱的构建流程。目前已有的分布式集群运行状态监测模型都不能涵盖所有种类的信息。文献\parencite{wang2019grano}只构建了组件拓扑图而忽略了组件上数据之间的因果关系；文献\parencite{nie2016mining-causality-graph}将运行时信息转为事件数据后，只关注了事件间的因果图而忽略事件所在组件之间的拓扑关系；文献\parencite{qiu2020causality-mining-knowledge-graph}尝试构建运维知识图谱，但所构建的知识图谱只包含组件间的访问与部署关系、指标与组件间的来源产生关系，对于异常信息间的触发关系，只能精确到指标时序类型之间的因果关系，如“Container
-1 CPU usage”导致了“Microservice 1 Response Time”，不能进一步确定是什么样的 CPU 变化
-导致了什么样的响应时间变化。本文在构建组件-事件知识图谱时，首先通过公开API（Application Programming Interface）、调用链追踪系统获取组件唯一标识符、属性和关联关系等信息；其次将日志、指标时序数据等运行时信息转为了事件类型数据，然后设计了共计6种事件特征用于发掘事件间因果关系；最后将同故障类型的组件-事件拓扑图整合起来，自动沉淀出了标有对应故障类型的组件-事件知识图谱。本章分别介绍了组件拓扑关系获取方式，事件因果关系获取方式和组件-事件知识图谱生成方式。
+目前已有的分布式集群运行状态监测模型都不能覆盖整合所有种类的信息。文献\parencite{wang2019grano}只构建了组件拓扑图而忽略了组件上数据之间的因果关系；文献\parencite{nie2016mining-causality-graph}将运行时信息转为事件数据后，只关注了事件间的因果图而忽略事件所在组件之间的拓扑关系；文献\parencite{qiu2020causality-mining-knowledge-graph}尝试构建运维知识图谱，但所构建的知识图谱只包含组件间的访问与部署关系、指标与组件间的来源产生关系，对于异常信息间的触发关系，只能精确到指标时序类型之间的因果关系，如“Container1 CPU usage”导致了“Microservice 1 Response Time”，不能进一步确定是什么样的 CPU 变化
+导致了什么样的响应时间变化。
+
+为了解决上述多源异构数据难以覆盖整合的问题，本章提出构建包含所有类型数据的组件-事件知识图谱。首先通过公开API（Application Programming Interface）和调用链追踪系统，获取组件唯一标识符、属性和关联关系等信息；其次将日志、指标时序数据等运行时信息转为了事件类型数据，然后引入了新的事件特征用于发掘事件间因果关系；最后将同故障类型的组件-事件拓扑图整合起来，自动沉淀出了标有对应故障类型的组件-事件知识图谱。
+
+本章共分为了4个小节。首先，分别介绍了组件拓扑关系获取，事件因果关系获取和组件-事件知识图谱生成。最后模拟构建数据集，并对事件因果关系判别模型进行了实验分析。
 
 % 对于组件部分数据，云服务商会提供开放的API返回分布式集群含有的组件属性信息、每类组件数量及每个组件间的关联关系。在事件层面，包含着分布式应用部署、模拟触发故障、数据收集、数据清洗、事件生成、事件因果关系挖掘及事件知识图谱构建。最后根据事件来源的组件类型，即可合并组件事件数据，构建生成组件-事件知识图谱。
 \section{组件拓扑关系获取}
@@ -11,7 +14,7 @@
     \includegraphics[width=.8\textwidth]{Kubernetes-components.png}
     \caption{Kubernetes集群结构示意图\label{Kubernetes-components}}
 \end{figure}
-Kubernetes集群\cite{bernstein2014containers}在云计算行业中已经被广泛使用，它是一个具有扩展性、移植性的开源平台，同时具有着清晰的声明式配置和自动化特性，被用于管理各种容器化工作负载和服务。Kubernetes集群由一组工作机器（称为节点）组成，这些节点上运行着微服务，但为微服务并不是直接运行在这些节点上，而是由节点中承载的Pod来负载这些微服务。在生产环境中，集群通常运行着多个节点，从而提供容错性和高可用性。图\ref{Kubernetes-components}为一个Kubernetes集群示意图，可见所有组件都被绑定在一起，其间存在着复杂的负载、交互等关系。
+Kubernetes（k8s）集群\cite{bernstein2014containers}在云计算行业中已经被广泛使用，它是一个具有扩展性、移植性的开源平台，同时具有着清晰的声明式配置和自动化特性，被用于管理各种容器化工作负载和服务。Kubernetes集群由一组工作机器（称为节点）组成，这些节点上运行着微服务，但为微服务并不是直接运行在这些节点上，而是由节点中承载的Pod来负载这些微服务。在生产环境中，集群通常运行着多个节点，从而提供容错性和高可用性。图\ref{Kubernetes-components}为一个Kubernetes集群示意图，可见所有组件都被绑定在一起，其间存在着复杂的负载、交互等关系。
 
 本文所使用的Kubernetes集群是阿里云针对企业级应用所优化的容器服务版Kubernetes集群，其管理容器化应用的能力具有伸缩性，性能较高。阿里云对其提供的Kubernetes集群中各类组件都进行了清晰定义，具体上各类组件类型及含义如表\ref{systemCompotent}所示。
 
@@ -20,29 +23,29 @@ Kubernetes集群\cite{bernstein2014containers}在云计算行业中已经被广�
     \centering
     \caption{集群组件信息}
     \begin{tabular}{cc}
-    \toprule
+    \toprule[2pt]
         
-        组件名称 & 含义 \\ \midrule
+        组件名称 & 含义 \\ \toprule[2pt]
         VPC & \tabincell{l}{专有网络（Virtual Private Cloud，VPC）是自定义私有网络。不同的专有网络之间\\存在二层逻辑隔离。用户可以在自己创建的专有网络内创建和管理各个云产品实\\例，比如ECS、SLB 、RDS 等。}  \\
-        \midrule
-        SLB & \tabincell{l}{负载均衡器（Server Load Balancer，SLB）是负责对多台应用实例进行流量分发\\的负载均衡服务。用户可以通过分流提高系统的服务能力，也可以通过消除单点\\故障使其具有可用性。} \\ 
-        \midrule
+        \midrule[1pt]
+        SLB & \tabincell{l}{负载均衡器（Server Load Balancer，SLB）负责提供对多台应用实例进行流量分发\\的负载均衡服务。用户可以通过分流提高系统的服务能力，也可以通过消除单点\\故障使其具有可用性。} \\ 
+        \midrule[1pt]
         ECS & \tabincell{l}{云服务器（Elastic Compute Service，ECS）是一种简单高效、具有弹性处理能力\\的计算服务。云服务器可以辅助用户高效率构建安全性、稳定性高的应用。} \\ 
-        \midrule
+        \midrule[1pt]
         Pod & \tabincell{l}{Pod 是 Kubernetes 中最小的部署单元和计费单位，根据应用场景，可以由一个或\\多个容器组成。当一个 Pod 中有多个容器时，这些容器会共享 Pod 的计算资源、\\存储空间、IP和端口。对于计算资源，Pod还可以限制各个容器使用的比例。} \\ 
-        \midrule
+        \midrule[1pt]
         Container & \tabincell{l}{Container即为容器，它包含在Pod中。一个Pod中有一个Pause容器和若干\\个业务容器。} \\ 
-        \midrule
+        \midrule[1pt]
         Service & \tabincell{l}{微服务是一种云原生架构方法，其中单个应用程序由许多松散耦合且可独立\\部署的较小Service组成。} \\ 
     
-    \bottomrule
+    \bottomrule[2pt]
     \end{tabular}
     \label{systemCompotent}
 \end{table}
 
 为了获取处于运行状态的Kubernetes集群中各个组件实例的唯一标识、属性和其间的关联关系，本文使用了云服务商提供的公开API进行数据的请求，如获取某区域ECS信息的API为DescribeInstances(.)方法接口，输入地理区域“cn-hangzhou”，就会返回该区域的ECS信息。图\ref{api_ecs_info}为返回的杭州区域的一台ECS的信息列表，包含该ECS的资源组、内存、唯一标识符、创建事件等属性信息，以及所属VPC的Id信息。除了Service类型组件，其它集群组件均可通过API获取其属性信息及与其他组件的关联信息。
 
-Service类型组件对应着部署在Kubernetes集群中的分布式应用的各个微服务。微服务之间的拓扑关系与开发人员编写的应用架构结构有关，无法通过云服务商提供的公开API直接获取。分布式应用代码是其所属公司的保密性数据，不能被外部获取或改写，所以通过侵入代码获取微服务结构的方法是不可行的。目前开放式的微服务追踪系统（如Jaeger\cite{mengistu2020distributed}），可以跟踪微服务之间的请求数据，然后分析汇总这些请求链路就可以构建出微服务之间的访问拓扑关系。追踪请求数据生成微服务拓扑关系的方法不必侵入代码，也不需要运维人员阅读分布式应用的开发文档，只需要将追踪系统部署在分布式应用所在的集群中跟踪分布式应用即可。因此，本文通过云服务商提高的公开API和分布式请求跟踪系统，获取了组件部分的拓扑结构及实体属性。
+Service类型组件对应着部署在Kubernetes集群中的分布式应用的各个微服务。微服务之间的拓扑关系与开发人员编写的应用架构结构有关，无法通过云服务商提供的公开API直接获取。分布式应用代码是其所属公司的保密性数据，不能被外部获取或改写，所以通过侵入代码获取微服务结构的方法是不可行的。目前开放式的微服务追踪系统（如Jaeger\cite{mengistu2020distributed}），可以跟踪微服务之间的请求数据，然后分析汇总这些请求链路就可以构建出微服务之间的访问拓扑关系。追踪请求数据生成微服务拓扑关系的方法不必侵入代码，也不需要运维人员阅读分布式应用的开发文档，只需要将追踪系统部署在分布式应用所在的集群中跟踪分布式应用即可。综上，本文通过云服务商提高的公开API和分布式请求跟踪系统，获取了组件部分的拓扑结构及实体属性。
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=.75\textwidth]{api_ecs_info.png}
@@ -50,8 +53,12 @@ Service类型组件对应着部署在Kubernetes集群中的分布式应用的各
 \end{figure}
 
 \section{事件因果关系获取}
-本小结旨在将集群运行状态数据经过清洗整理后转为事件信息，并进一步经过关系分类器挖掘事件间因果关系。在事件生成部分，使用了聚类、异常识别、模板匹配结合的方式，将实时产生的日志、指标时序数据转为了事件类数据。在事件因果关系挖掘部分，为了克服过往工作中只存在基于概率的事件特征，导致领域专家需要反复标注海量数据训练模型才能达到良好效果的问题，本文设计了6种事件特征，最终不需要反复标注海量数据就可以达到优质的效果。
-\subsection{事件生成}
+本小节旨在将集群运行状态数据经过清洗整理后转为事件信息，并进一步经过关系分类器挖掘事件间因果关系。本小节分为两部分展开介绍，分别为事件生成和事件因果关系挖掘。
+
+在事件生成部分，使用了聚类、异常识别、模板匹配结合的方式，将实时产生的日志、指标时序数据转为了事件类数据。
+
+在事件因果关系挖掘部分，过往工作大量依赖基于概率的事件特征，导致领域专家需要反复标注海量数据训练模型才能达到良好效果。为了克服该问题，本文设计并引入了新的事件特征，最终不需要反复标注海量数据就可以达到优质的效果。
+\subsection{事件生成}\label{event-generate}
 \begin{definition}[事件]
     \label{event-define}
     事件。事件是对分布式系统中组件运行状态的描述。主要包括五个部分：
@@ -84,31 +91,143 @@ Service类型组件对应着部署在Kubernetes集群中的分布式应用的各
     \includegraphics[width=.8\textwidth]{log-example.png}
     \caption{日志数据样例\label{log-example}}
 \end{figure}
+此外，在生成的事件中存在大量的完全周期性事件，其定义如Definition \ref{periodic-event}所示。完全周期性事件的存在，一方面使得事件数量级抖升而增加了时空复杂度，一方面会干扰后续事件因果分析、故障预测的效果。完全周期性事件不管集群有无异常都会保持绝对的周期出现，与集群状态无关。因此，在生成事件后，需要初步筛选去除具有完全周期性的事件，本文使用DTW（Dynamic Time Warping）算法\cite{mueen2016extracting}判断事件是否为完全周期性事件。采用DTW算法的原因在于该算法已经在语音匹配任务中取得了优秀的效果，它不需要曲线精确的对位分析，能适应时间错位性。利用该算法去除完全周期性噪声事件的具体做法为：
 
-本文生成的事件按照严重等级可以划分如表\ref{event-type}所示，包括正常事件、异常事件和故障事件。正常事件是指系统内组件在正常业务逻辑中产生的事件，注意正常事件也有可能引发故障，比如事件“服务器正在重启”，虽然此事件是服务器正常重启产生的事件，但是如果在此服务器重启时，其他服务器对其访问，也会产生“访问失败”事件，触发系统故障。异常事件是指系统组件发生了正常执行业务时不会出现的事件，如异常检测算法检测到的系统异于常态的事件，但异常事件发生时组件仍可工作，不会发生系统不可用。故障事件是描述组件故障的事件，故障事件发生时系统部分服务已无法正常工作。
-% Please add the following required packages to your document preamble:
-% \usepackage{multirow}
-% Please add the following required packages to your document preamble:
-% \usepackage{multirow}
+（1）统计某类事件$e$在异常注入前$t_1$时间段、异常到故障产生时间段$t_2$和故障发生后$t_{3}$时间段这三段时间内，发生的频次曲线。其中$t_1 = t_2 = t_3$。
+
+（2）对比三段时间$t_1$、$t_2$和$t_{3}$所对应的三条频次曲线。如果DTW算法判别三者等同，则认为该类事件是完全周期性事件。
+
+（3）对异常注入到故障产生时间段内的所有事件均采取上述判别过程。最终将认定有完全周期性的事件删除，只保留非完全周期性事件。该过程可以删去总事件量中约15\%的完全周期性事件，如在总共收集到的3738条事件中，删去了537条完全周期性事件。
 \begin{table}[htbp]
+    \caption{事件类型层次关系}
     \centering
-    \caption{事件严重程度划分结果}
-    \label{event-type}
-    \begin{tabular}{ccc}
-    \toprule
-    初级划分                  & 次级划分   & 示例                                                                                                       \\ 
-    \midrule
-    \multirow{2}{*}{正常事件} & 硬件正常事件 & container memory 50\%、container cpu 50\%、...                                                             \\
-                          & 软件正常事件 & 数据库连接成功、...                                                                                              \\ 
-                          \midrule
-    \multirow{2}{*}{异常事件} & 硬件异常事件 & container memory 100\%、container cpu 100\%、...                                                           \\
-                          & 软件异常事件 & 数据库连接失败、...                                                                                              \\ 
-                          \midrule
-    \multirow{2}{*}{故障事件} & 硬件故障事件 & 服务器宕机、...                                                                                                \\
-                          & 软件故障事件 & \begin{tabular}[c]{@{}c@{}}HttpServerErrorException 503、\\ HttpServerErrorException 500、...\end{tabular} \\ 
-                          \bottomrule
+    \label{event-type-level}
+    \begin{tabular}{cccc}
+    \toprule[2pt]
+    事件大类别    & 细分           & \begin{tabular}[c]{@{}c@{}}类别数目\\ （train-ticket）\end{tabular} & \begin{tabular}[c]{@{}c@{}}类别数目\\ （sock-shop）\end{tabular} \\ \midrule[2pt]
+    指标时序事件 & 异常点事件        & 64                 & 64              \\
+             & 告警事件         & 21                 & 21              \\ \midrule[1pt]
+    日志事件    & k8s日志事件      & 50                 & 50              \\
+             & dockerIO日志事件 & 69                 & 76              \\ \midrule[1pt]
+    共计       &              & 204                & 211             \\ 
+    \bottomrule[2pt]
     \end{tabular}
 \end{table}
+
+本文生成的事件数据按照来源划分，可以分成两类：指标时序事件和日志事件。指标时序事件和日志事件可以继续往下划分，所划分生成的类别与每类别的数目如表\ref{event-type-level}所示。
+
+其中，异常点事件名称由监控项拼接异常点类型构成，表示了在组件的某个监控项曲线出现了某种异常点。监控项共有16种，如式\ref{kpi-event}所示。异常点类型共有4种：突然上升、突然下降、尖峰、低谷。每个监控项都会出现这四种异常点，比如$system.mem.util$突然上升$system.mem.util$突然下降、$system.mem.util$出现尖峰、$system.mem.util$出现低谷。因此，将每个监控项与异常点类型两两排列组合，可生成共计64种异常点事件。
+\begin{equation}
+    \begin{array}{l}
+        container.cpu.load.average.10s,\\
+        container.cpu.usage.seconds.total,\\
+        container.fs.reads.bytes.total,\\
+        container.fs.writes.bytes.total,\\
+        container.memory.usage.bytes,\\
+        container.network.receive.bytes.total,\\
+        container.network.receive.packets.dropped.total,\\
+        container.network.transmit.bytes.total,\\
+        container.network.transmit.packets.dropped.total,\\
+        system.net.drop.util,\\
+        system.net.in,\\
+        system.net.out,\\
+        system.io.disk.rbps,\\
+        system.io.disk.wbps,\\
+        system.mem.util,\\
+        system.cpu.util\\ 
+    \end{array}
+    \label{kpi-event}
+\end{equation}
+
+告警事件名称是由监控项和阈值组成的，表明了在设备的某个监控项上出现了达到阈值的告警信息。会发生告警事件的监控项共7种，每个监控项目都有3种告警阈值。监控项和相应阈值如表\ref{alarm-event}所示。可见每个监控项都会生成3种告警事件，比如$pod.cpu.util$达到$100\%$、$pod.cpu.util$达到$90\%$、$pod.cpu.util$达到$95\%$。因此，将每个监控项与对应阈值组合，可生成告警事件共计21种。
+\begin{table}[htbp]
+    \centering
+    \caption{告警事件监控项及相应阈值}
+    \label{alarm-event}
+    \begin{tabular}{cc}
+    \toprule[2pt]
+    监控项                          & 阈值              \\ \\\midrule[2pt]
+    pod.cpu.util                 & 100\% 95\% 90\% \\
+    pod.mem.util                 & 100\% 95\% 90\% \\
+    system.cpu.util              & 100\% 95\% 90\% \\
+    system.mem.util              & 100\% 95\% 90\% \\
+    system.net.drop.util         & 20\% 10\% 5\%   \\
+    system.net.err.util          & 20\% 10\% 5\%   \\
+    system.partition.space.usage & 100\% 95\% 90\% \\ 
+    \bottomrule[2pt]
+    \end{tabular}
+    \end{table}
+% \newpage
+
+k8s（kubeneters）是分布式集群容器的管理系统，k8s日志事件就是k8s管理系统产生的事件，包含pod镜像拉取、pod健康状况等事件。这类事件共有50种细分类型，式\ref{k8s-event}展示了部分k8s日志事件类型。
+\begin{equation}
+    \begin{array}{c}
+        Unhealthy.Warning, \\
+        Killing.Normal,\\
+        Scheduled.Normal,\\
+        Pulled.Normal,\\
+        Created.Normal,\\
+        Started.Normal,\\
+        Pulling.Normal,\\
+        BackOff.Warning,\\
+        FailedSync.Warning,\\
+        Failed.Warning,\\
+        FailedCreatePodSandBox.Warning,\\
+        SandboxChanged.Normal,\\
+        FailedKillPod.Warning,\\
+        FailedScheduling.Warning,\\
+        BackOff.Normal,\\
+        FailedMount.Warning,\\ 
+        Scheduled.Normal,\\
+        Pulled.Normal,\\
+    \end{array}
+    \label{k8s-event}
+\end{equation}
+
+DockerIO日志事件指的是Docker中的输入输出日志所转化生成的事件。该类事件记录了Docker\cite{boettiger2015introduction}中的各种操作信息和容器中微服务应用运行时日志信息。在将这些日志聚类并编写人工模板后，人工模板被用来匹配日志信息以收集统计DockerIO日志事件类型。其中，因为不同分布式应用的微服务结构不同，且输出日志直接由开发人员编写的代码所决定，所以两应用中的DockerIO事件类型有所不同。最终train-ticket应用中收集到69种DockerIO日志事件，而sock-shop应用中共收集到76种DockerIO日志事件。式\ref{dockerio-event}中列出了部分DockerIO日志事件类型名称。
+\begin{equation}
+    \begin{array}{l}
+        java.lang.AbstractMethodError,\\
+        java.lang.AssertionError,\\
+        java.lang.ClassCircularityError,\\
+        java.lang.ClassFormatError,\\
+        java.lang.Error,\\
+        spring.server.connect.failed,\\
+        warn.Omitting,\\
+        warning.stderr,\\
+        spring.http.server.error,\\
+        error.mcp.Failed.to.create.a.new.MCP.sink.stream,\\
+        trying.to.establish.new.MCP.sink.stream,\\
+        socket.go.Successful.write.metrics.to.monitor.server,\\
+        operator.go.sync.prometheus,\\
+        event.go.reason.UPDATE.Ingress,\\
+    \end{array}
+    \label{dockerio-event}
+\end{equation}
+% 本文生成的事件按照严重等级可以划分如表\ref{event-type}所示，包括正常事件、异常事件和故障事件。正常事件是指系统内组件在正常业务逻辑中产生的事件，注意正常事件也有可能引发故障，比如事件“服务器正在重启”，虽然此事件是服务器正常重启产生的事件，但是如果在此服务器重启时，其他服务器对其访问，也会产生“访问失败”事件，触发系统故障。异常事件是指系统组件发生了正常执行业务时不会出现的事件，如异常检测算法检测到的系统异于常态的事件，但异常事件发生时组件仍可工作，不会发生系统不可用。故障事件是描述组件故障的事件，故障事件发生时系统部分服务已无法正常工作。
+% % Please add the following required packages to your document preamble:
+% % \usepackage{multirow}
+% % Please add the following required packages to your document preamble:
+% % \usepackage{multirow}
+% \begin{table}[htbp]
+%     \centering
+%     \caption{事件严重程度划分结果}
+%     \label{event-type}
+%     \begin{tabular}{ccc}
+%     \toprule[2pt]
+%     初级划分                  & 次级划分   & 示例                                                                                                       \\ 
+%     \midrule[1pt]
+%     \multirow{2}{*}{正常事件} & 硬件正常事件 & container memory 50\%、container cpu 50\%、...                                                             \\
+%                           & 软件正常事件 & 数据库连接成功、...                                                                                              \\ 
+%                           \midrule[1pt]
+%     \multirow{2}{*}{异常事件} & 硬件异常事件 & container memory 100\%、container cpu 100\%、...                                                           \\
+%                           & 软件异常事件 & 数据库连接失败、...                                                                                              \\ 
+%                           \midrule[1pt]
+%     \multirow{2}{*}{故障事件} & 硬件故障事件 & 服务器宕机、...                                                                                                \\
+%                           & 软件故障事件 & \begin{tabular}[c]{@{}c@{}}HttpServerErrorException 503、\\ HttpServerErrorException 500、...\end{tabular} \\ 
+%                           \bottomrule[2pt]
+%     \end{tabular}
+% \end{table}
 
 % \begin{table}[]
 %     \caption{事件严重程度划分}
@@ -124,13 +243,7 @@ Service类型组件对应着部署在Kubernetes集群中的分布式应用的各
 %     \end{tabular}
 % \end{table}
 
-此外，在生成的事件中存在大量的完全周期性事件，其定义如Definition \ref{periodic-event}所示。完全周期性事件的存在，一方面使得事件数量级抖升而增加了时空复杂度，一方面会干扰后续事件因果分析、故障预测的效果。完全周期性事件不管集群有无异常都会保持绝对的周期出现，与集群状态无关。因此，在生成事件后，需要初步筛选去除具有完全周期性的事件，本文使用DTW（Dynamic Time Warping）算法\cite{mueen2016extracting}判断事件是否为完全周期性事件。采用DTW算法的原因在于该算法已经在语音匹配任务中取得了优秀的效果，它不需要曲线精确的对位分析，能适应时间错位性。利用该算法进行去除完全周期性噪声事件的具体做法为：
 
-（1）统计某类事件$e$在异常注入前$t_1$时间段、异常到故障产生时间段$t_2$和故障发生后$t_{3}$时间段这三段时间内，发生的频次曲线。其中$t_1 = t_2 = t_3$。
-
-（2）对比三段时间$t_1$、$t_2$和$t_{3}$所对应的三条频次曲线。如果DTW算法判别三者等同，则认为该类事件是完全周期性事件。
-
-（3）对异常注入到故障产生时间段内的所有事件均采取上述判别过程。最终将认定有完全周期性的事件删除，只保留非完全周期性事件。该过程可以删去总事件量中约15\%的完全周期性事件，如在总共收集到的3738条事件中，删去了537条完全周期性事件。
 % \begin{figure}[htbp]
 %     \centering
 %     \includegraphics[width=.65\textwidth]{deleted-period-events.png}
@@ -146,7 +259,7 @@ Service类型组件对应着部署在Kubernetes集群中的分布式应用的各
 % \end{figure}
 % \newpage
 \subsection{事件因果关系挖掘}
-关系分类器用于判别事件间关系类型，本文中为有无因果关系。输入关系分类器的是A、B两事件特征向量，输出为A到B是否有因果关系，即A→B是否存在。若要判断有无B到A（即B→A）的因果关系，需要按照顺序输入B、A两事件特征向量。本文共设计了以下6种事件特征：
+关系分类器用于判别事件间关系类型，本文中为有无因果关系。输入关系分类器的是A、B两事件特征向量，输出为A到B是否有因果关系，即A→B是否存在。若要判断有无B到A（即B→A）的因果关系，需要按照顺序输入B、A两事件特征向量。本文共使用了以下6种事件特征，其中（1）（2）源自相关工作\cite{nie2016mining-causality-graph},（3）-（6）为本文新设计的事件特征。
 
 （1） 皮尔逊相关系数：该特征用来计算两个事件之间的相关性，即两个事件之间的皮尔逊相关系数越高，那么这两个事件越相关，越有可能是因果关系。皮尔逊相关系数计算方法如公式\ref{1per}所示。其中$X,Y$是事件$A,B$分别在时间维度上展开的向量。当事件发生时为1，未发生时为0，事件按照在每个时间戳是否发生，可以表示为0、1组成的数字向量。
 \begin{equation}
@@ -193,7 +306,7 @@ Service类型组件对应着部署在Kubernetes集群中的分布式应用的各
     \label{abstract_event}
 \end{definition}
 \begin{definition}[组件-事件知识图谱]
-    组件-事件知识图谱由各种实体和关系组成，并有对应的故障类型，可表示为$G=(\mathcal{F}, \mathcal{V}, \mathcal{E}, \mathcal{R})$。$\mathcal{F}$为组件-事件知识图谱所在的故障场景名称。实体集合$\mathcal{V}$包含着每个服务器、容器、微服务、负载均衡器等组件实体和抽象事件实体。关系集合$\mathcal{E}$包含每条组件实体之间的交互关系、组件实体和抽象事件实体间的产生关系、抽象事件实体之间的因果关系。$\mathcal{R}$则表示关系类别集合。
+    组件-事件知识图谱由各种实体和关系组成，并有对应的故障类型，可表示为$G=(\mathcal{F}, \mathcal{V}, \mathcal{E}, \mathcal{R})$。$\mathcal{F}$为组件-事件知识图谱对应的故障类型名。实体集合$\mathcal{V}$包含着每个服务器、容器、微服务、负载均衡器等组件实体和抽象事件实体。关系集合$\mathcal{E}$包含每条组件实体之间的交互关系、组件实体和抽象事件实体间的产生关系、抽象事件实体之间的因果关系。$\mathcal{R}$则表示关系类别集合。
     \label{device-event-graph}
 \end{definition}
 
@@ -203,7 +316,7 @@ Service类型组件对应着部署在Kubernetes集群中的分布式应用的各
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=.9\textwidth]{relation-combine.pdf}
-    \caption{对应故障类型A的组件-事件知识图谱生成流程\label{relation-combine}}
+    \caption{对应故障类型$\mathcal{F}$的组件-事件知识图谱生成流程\label{relation-combine}}
 \end{figure}
 
 图\ref{relation-combine}是故障类型$\mathcal{F}$对应的抽象事件层知识图谱构建流程。下面是故障类型$\mathcal{F}$对应组件-事件知识图谱的具体构建步骤描述：
@@ -227,9 +340,249 @@ Service类型组件对应着部署在Kubernetes集群中的分布式应用的各
 \end{figure}
 
 图\ref{graph-example}是故障类型“数据库不可用无法查票”对应的组件-事件知识图谱的一部分。该知识图谱中，组件部分清晰地展示了ts-train-sevice，ts-ticketinfo-service，ts-travel-service分别部署在3个Container容器上，而这些容器托付在多个Pod中。同样的，这些Pod被负载在2台云服务器ECS中，并且这些ECS又被一台负载均衡器SLB所调控。在抽象事件部分，抽象事件实体被因果关系连接构成了抽象事件图，该图沉淀了ts-travel-service发生HttpServerError Exception 500故障的触发链知识。另外，抽象事件部分与组件部分被happen关系连接，本质上描述了抽象事件在哪类组件上产生。
+% \newpage
+\section{实验与分析}\label{event-cause-classidier-experiment}
+由于组件间拓扑关系、组件到抽象事件的产生关系都可以准确获取，影响组件-事件知识图谱质量的只有事件间因果关系。因此，本节重点关注事件因果关系判别的效果，进行了相关实验的设计与实施。本节实验目的在于验证使用的6种事件特征，可以提升事件因果判别模型效果。本节共分为4小节介绍实验，包括数据集构建、评测指标、实验方法和实验结果分析。
+\subsection{数据集构建}
+实验采用了阿里云kubernetes集群，集群各个组件数量如表\ref{component-num}所示。在该集群上部署了文献\parencite{zhou2018poster,rahman2019predicting}实验时分别使用的两个分布式应用，即\href{https://github.com/FudanSELab/train-ticket}{train-ticket}和\href{https://github.com/microservices-demo/microservices-demo}{sock-shop}。随后使用\href{https://github.com/asobti/kube-monkey}{kube-monkey}和\href{https://github.com/chaosblade-io/chaosblade}{ChaosBlade}向应用注入异常以模拟故障。在异常注入到故障产生的时间段中，阿里云的SLS平台负责收集实时产生的日志数据和指标时序数据。所模拟故障的数据统计信息如表\ref{failure-simulation-info}所示。这些数据后续经过事件生成模块，均转化为了事件类型数据。
+\begin{table}[htbp]
+    \caption{集群各类组件数量统计}
+    \label{component-num}
+    \centering
+    \begin{tabular}{ccc}
+    \toprule[2pt]
+    组件名称      & train-ticket & sock-shop        \\ \midrule[2pt]
+    VPC       & 34           & 28 \\
+    SLB       & 30           & 36 \\
+    ECS       & 30           & 30 \\
+    Pod       & 215          & 181 \\
+    Container & 720          & 621 \\
+    Service   & 172          & 132 \\ \midrule[1pt]
+    共计   & 1201          & 1028 \\ \bottomrule[2pt]
+    \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+    \caption{故障模拟信息}
+    \centering
+    \label{failure-simulation-info}
+    \begin{tabular}{ccc}
+    \toprule[2pt]
+    分布式应用       & train-ticket & \multicolumn{1}{c}{sock-shop} \\ \midrule[2pt]
+    时间跨度       & 25天          & 14天                           \\
+    平均故障时间段跨度  & 303s         & 310s                          \\
+    单个故障时间段含有事件数目 & 4823         & 3352                          \\
+    故障次数       & 491          & 573                           \\
+    % 故障次数       & 423          & 550                           \\
+    故障种类       & 10           & 17                            \\
+    事件类型种类     & 204          & 211                           \\ 
+    \bottomrule[2pt]
+    \end{tabular}
+\end{table}
+
+% 事件类型数据按照来源划分可以分成两类：指标时序事件和日志事件。指标时序事件对应着曲线变化的异常点，而日志事件对应着集群中组件实时产生的日志。指标时序事件和日志事件可以继续往下划分，所划分生成的类别与每类别的数目如表\ref{event-type-level}所示。
+% \begin{table}[htbp]
+%     \caption{事件类型层次关系}
+%     \centering
+%     \label{event-type-level}
+%     \begin{tabular}{cccc}
+%     \toprule[2pt]
+%     事件大类别    & 细分           & \begin{tabular}[c]{@{}c@{}}类别数目\\ （train-ticket）\end{tabular} & \begin{tabular}[c]{@{}c@{}}类别数目\\ （sock-shop）\end{tabular} \\ \midrule[1pt]
+%     指标时序事件 & 异常点事件        & 64                 & 64              \\
+%              & 告警事件         & 21                 & 21              \\ \midrule[1pt]
+%     日志事件    & k8s日志事件      & 50                 & 50              \\
+%              & dockerIO日志事件 & 69                 & 76              \\ \midrule[1pt]
+%     共计       &              & 204                & 211             \\ 
+%     \bottomrule[2pt]
+%     \end{tabular}
+%     \end{table}
+
+% 其中，异常点事件名称由监控项拼接异常点类型构成，表示了在组件的某个监控项曲线出现了某种异常点。监控项共有16种，如式\ref{kpi-event}所示。异常点类型共有4种：突然上升、突然下降、尖峰、低谷。每个监控项都会出现这四种异常点，比如$system.mem.util$突然上升$system.mem.util$突然下降、$system.mem.util$出现尖峰、$system.mem.util$出现低谷。因此，将每个监控项与异常点类型两两排列组合，可生成共计64种异常点事件。
+% \begin{equation}
+%     \begin{array}{l}
+%         container.cpu.load.average.10s,\\
+%         container.cpu.usage.seconds.total,\\
+%         container.fs.reads.bytes.total,\\
+%         container.fs.writes.bytes.total,\\
+%         container.memory.usage.bytes,\\
+%         container.network.receive.bytes.total,\\
+%         container.network.receive.packets.dropped.total,\\
+%         container.network.transmit.bytes.total,\\
+%         container.network.transmit.packets.dropped.total,\\
+%         system.net.drop.util,\\
+%         system.net.in,\\
+%         system.net.out,\\
+%         system.io.disk.rbps,\\
+%         system.io.disk.wbps,\\
+%         system.mem.util,\\
+%         system.cpu.util\\ 
+%     \end{array}
+%     \label{kpi-event}
+% \end{equation}
+
+% 告警事件名称是由监控项和阈值组成的，表明了在设备的某个监控项上出现了达到阈值的告警信息。会发生告警事件的监控项共7种，每个监控项目都有3种告警阈值。监控项和相应阈值如表\ref{alarm-event}所示。可见每个监控项都会生成3种告警事件，比如$pod.cpu.util$达到$100\%$、$pod.cpu.util$达到$90\%$、$pod.cpu.util$达到$95\%$。因此，将每个监控项与对应阈值组合，可生成告警事件共计21种。
+% \begin{table}[]
+%     \centering
+%     \caption{告警事件监控项及相应阈值}
+%     \label{alarm-event}
+%     \begin{tabular}{cc}
+%     \toprule[2pt]
+%     监控项                          & 阈值              \\ \midrule[1pt]
+%     pod.cpu.util                 & 100\% 95\% 90\% \\
+%     pod.mem.util                 & 100\% 95\% 90\% \\
+%     system.cpu.util              & 100\% 95\% 90\% \\
+%     system.mem.util              & 100\% 95\% 90\% \\
+%     system.net.drop.util         & 20\% 10\% 5\%   \\
+%     system.net.err.util          & 20\% 10\% 5\%   \\
+%     system.partition.space.usage & 100\% 95\% 90\% \\ 
+%     \bottomrule[2pt]
+%     \end{tabular}
+%     \end{table}
+
+% k8s（kubeneters）是分布式集群容器的管理系统，k8s日志事件就是k8s管理系统产生的事件，包含pod镜像拉取、pod健康状况等事件。这类事件共有50种细分类型，式\ref{k8s-event}展示了部分k8s日志事件类型。
+% \begin{equation}
+%     \begin{array}{l}
+%         Unhealthy.Warning, \\
+%         Killing.Normal,\\
+%         Scheduled.Normal,\\
+%         Pulled.Normal,\\
+%         Created.Normal,\\
+%         Started.Normal,\\
+%         Pulling.Normal,\\
+%         BackOff.Warning,\\
+%         FailedSync.Warning,\\
+%         Failed.Warning,\\
+%         FailedCreatePodSandBox.Warning,\\
+%         SandboxChanged.Normal,\\
+%         FailedKillPod.Warning,\\
+%         FailedScheduling.Warning,\\
+%         BackOff.Normal,\\
+%         FailedMount.Warning,\\ 
+%         Scheduled.Normal,\\
+%         Pulled.Normal,\\
+%     \end{array}
+%     \label{k8s-event}
+% \end{equation}
+
+% DockerIO日志事件指的是Docker中的输入输出日志所转化生成的事件。该类事件记录了Docker\cite{boettiger2015introduction}中的各种操作信息和容器中微服务应用运行时日志信息。在将这些日志聚类并编写人工模板后，人工模板被用来匹配日志信息以收集统计DockerIO日志事件类型。其中，因为不同分布式应用的微服务结构不同，且输出日志直接由开发人员编写的代码所决定，所以两应用中的DockerIO事件类型有所不同。最终train-ticket应用中收集到69种DockerIO日志事件，而sock-shop应用中共收集到76种DockerIO日志事件。式\ref{dockerio-event}中列出了部分DockerIO日志事件类型名称。
+% \begin{equation}
+%     \begin{array}{l}
+%         java.lang.AbstractMethodError,\\
+%         java.lang.AssertionError,\\
+%         java.lang.ClassCircularityError,\\
+%         java.lang.ClassFormatError,\\
+%         java.lang.Error,\\
+%         spring.server.connect.failed,\\
+%         warn.Omitting,\\
+%         warning.stderr,\\
+%         spring.http.server.error,\\
+%         error.mcp.Failed.to.create.a.new.MCP.sink.stream,\\
+%         trying.to.establish.new.MCP.sink.stream,\\
+%         socket.go.Successful.write.metrics.to.monitor.server,\\
+%         operator.go.sync.prometheus,\\
+%         event.go.reason.UPDATE.Ingress,\\
+%     \end{array}
+%     \label{dockerio-event}
+% \end{equation}
+% \subsection{数据标注}
+本实验对数据集中的关系种类进行了标注，标注数据覆盖了每一种故障类型。其中对于每种故障类型，随机抽取了该类故障类型2个具体时间段的数据进行了标注，只对认为有因果关系的事件对标注为1，其余事件对默认无因果关系标注为0。
+
+由于事件因果判别模型是根据事件对统计特征发掘事件间因果关系，与事件来自何种应用无关，所以本块实验不区分事件来自于train-ticket还是sock-shop，直接把两个应用来源的标注事件对整合起来。最终标注为1的事件对共计286条，其余默认无关系的共计8,250,290‬条。数据集train-ticket、sock-shop的标注信息如下表\ref{event-cause-label}所示。由于正负样本数量级差距较大，后续选择了按照正负样本比1:10随机抽取了一批负样本数据用于训练。抽取出用于训练的数据共包含正样本286条，负样本2860条。
+\begin{table}[htbp]
+    \caption{事件对因果关系标注数据集}
+    \centering
+    \label{event-cause-label}
+    \begin{tabular}{cccc}
+    \toprule[2pt]
+        分布式应用     & 正例  & 负例      & 总计      \\ \midrule[2pt]
+    train-ticket & 121 & 3610827 & 3610948 \\
+    sock-shop    & 165 & 4639463 & 4639628 \\ \midrule[1pt]
+    总计           & 286 & 8250290 & 8250576 \\ 
+    \bottomrule[2pt]
+    \end{tabular}
+\end{table}
+
+\subsection{评测指标}
+由于事件因果关系判别模型目的在于正确判别事件对之间的关系，所以本块实验以被标注的事件对关系被识别的精确率（$precision$）、召回率（$recall$）和$F1$值作为评测标准。计算公式分别如式\ref{relation-classifier-p}、\ref{relation-classifier-r}和\ref{relation-classifier-f}所示。
+% \begin{equation}
+%     \begin{array}{c}
+%     precision =\frac{\left|R_{correct }\right|}{|R_{predict}|} \\
+%      recall =\frac{\left|R_{correct }\right|}{\left|R_{label }\right|}  \\
+%     F 1=\frac{2 \times  precision  \times  recall }{precision + recall }
+%     \end{array}
+%     \label{relation-classifier-prf}
+% \end{equation}{\Huge } 
+\begin{equation}
+    \centering
+    precision =\frac{\left|R_{correct }\right|}{|R_{predict}|}
+    \label{relation-classifier-p}
+\end{equation}
+\begin{equation}
+    \centering
+    recall =\frac{\left|R_{correct }\right|}{\left|R_{label }\right|}
+    \label{relation-classifier-r}
+\end{equation}
+\begin{equation}
+    \centering
+    F 1=\frac{2 \times  precision  \times  recall }{precision + recall }
+    \label{relation-classifier-f}
+\end{equation}
+
+其中，$\left|R_{\text {correct }}\right|$为同时被标注存在因果关系且被判别为存在因果关系的事件对数，$|R_{\text {predict}}|$为模型判别为有因果关系的事件对数，$\left|R_{\text {label }}\right|$为被标注存在因果关系的事件对数。
+
+\subsection{实验方法}
+对于标注数据中的正样本286条、负样本2860条，随机抽取平分为5份，以便采用5折交叉验证方法。其中每份数据集中包含正样本数57，负样本数572。
+% 根据文献\parencite{nie2016mining-causality-graph,qiu2020causality-mining-knowledge-graph}中的实验，
+本块实验选用了SVM、XGBoost、随机森林、逻辑回归和多层感知机共计五种经典模型进行了对比实验，以选出最优表现的分类模型。
+
+另外，为了验证本文选用的6种事件特征对因果关系判别的提升（其中只有“关系置信度”为基于概率的特征），实验总结了已有工作中使用的特征进行对比（其中前 6 项均是基于概率的特征），如表\ref{only-prob-feature}所示。随后，用“multi”表示本文使用的事件特征集，“base”表示对比特征集。
+\begin{table}[htbp]
+    \caption{对比特征集}
+    \centering
+    \label{only-prob-feature}
+    \begin{tabular}{cc}
+    \toprule[2pt]
+    特征名    & 计算方式                  \\ \midrule[2pt]
+    共现次数\cite{liu1998integrating}   & A，B共现次数               \\
+    关系置信度\cite{liu1998integrating}  & $P(B|A)$                \\
+    逆关系置信度\cite{liu1998integrating} & $P(A|B)$                \\
+    Lift\cite{liu1998integrating}  & $P(AB)/((P(A) \cdot P(B)))$ \\
+    KULC\cite{liu1998integrating}   & $(P(A|B) + P(B|A))/2$   \\
+    IR\cite{liu1998integrating}    & $P(A)/(B)$              \\ 
+    Pearson\cite{mahimkar2008troubleshooting} & 皮尔逊相关系数         \\
+    Location\cite{nie2016mining-causality-graph}  & 事件是否发生在同一个设备 \\ 
+    \bottomrule[2pt]
+    \end{tabular}
+    \end{table}
+
+\subsection{实验结果与分析}
+\begin{table}[htbp]
+    \caption{各分类模型事件因果关系判别结果}
+    \centering
+    \label{cause-relation-result}
+    \begin{tabular}{ccccc}
+    \toprule[2pt]
+    模型      & 选用数据特征              & 精确率            & 召回率                           & F1             \\ \midrule[2pt]
+    SVM     & multi               & \textbf{0.951} & 0.961                         & \textbf{0.956} \\
+    XGBoost & multi               & 0.911          & 0.895                         & 0.903          \\
+    随机森林    & multi               & 0.950          & 0.792                         & 0.864          \\
+    逻辑回归    & multi               & 0.913          & 0.845                         & 0.878          \\
+    多层感知机   & multi               & 0.892          & \textbf{1.0}                  & 0.943          \\ \midrule[1pt]
+    SVM     & base & 0.822          & 0.769                         & 0.795          \\
+    XGBoost & base & 0.779          & 0.756                         & 0.767          \\
+    随机森林    & base & 0.831          & 0.770                         & 0.799          \\
+    逻辑回归    & base & 0.782          & 0.754                         & 0.768          \\
+    多层感知机   & base & 0.739          & 0.816  & 0.776          \\ \bottomrule[2pt]
+    \end{tabular}
+\end{table}
+实验统计了各个模型在进行5折交叉验证时，所计算得到的精确率、召回率和F1值，结果统计如表\ref{cause-relation-result}所示。对于每个模型，都尝试了多种超参数组合，最终通过网格搜索选择可使其达到最佳效果的超参数组合。
+
+在表\ref{cause-relation-result}统计的结果中，SVM模型的精确率、召回率和F1值均达到了0.95以上，而随机森林、逻辑回归和XGBoost效果较差。多层感知机召回率达到了1.0，但精确率只有0.892，可见其偏向于将数据都判别为正例，判别结果会出现过多的假阳。在本实验中，SVM模型取得最佳效果时所设置的超参数组合为高斯核函数、$sigma=1$、松弛变量=5。
+
+另外，对比选用的数据特征，发现使用“multi”比只使用“base”的特征在所有模型上都取得了更好的效果，证明了本文设计并引入新的事件特征对因果关系判别效果有显著提升。
 
 \section{本章小结}
-本章主要介绍了组件-事件知识图谱的构建方式。对于组件部分数据，云服务商会提供开放的API返回分布式集群含有的组件属性信息、组件数量及每个组件间的关联关系，微服务访问追踪系统可以获取微服务间访问拓扑关系。在事件数据层面，通过聚类、异常检测算法和模板匹配将多源异构数据统一为了事件类型数据，随后训练关系分类器挖掘事件间因果关系，最后将历史数据按照故障类型分组再沉淀生成对应故障类型的组件-事件知识图谱。下一章会在此基础上，研究组件-事件知识图谱的表示学习工作。
+本章主要介绍了组件-事件知识图谱的构建方式，该图谱整合了所有种类的数据。对于组件部分数据，云服务商会提供开放的API返回分布式集群含有的组件属性信息、组件数量及每个组件间的关联关系，微服务访问追踪系统可以获取微服务间访问拓扑关系。在事件数据层面，通过聚类、异常检测算法和模板匹配将多源异构数据统一为了事件类型数据，随后训练关系分类器挖掘事件间因果关系，最后将历史数据按照故障类型分组再沉淀生成对应故障类型的组件-事件知识图谱。在实验部分，实验结果验证了本文新设计引入的事件特征，对事件因果关系判别的有效性。下一章会在此基础上，研究组件-事件知识图谱的表示学习工作。
 
 % 知识图谱可以用资源描述框架（RDF）\cite{heim2009relfinder}来表示，它包含一个主语、谓语和宾语，如等式\ref{rdf}所示。RDF由节点和边组成。节点表示实体和属性，边表示实体和实体之间的关系以及实体和属性之间的关系。
 % \begin{equation}

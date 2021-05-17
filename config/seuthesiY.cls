@@ -139,7 +139,7 @@ BoldItalicFont=timesbi.ttf
 \RequirePackage{nomencl}
 \makenomenclature
 \newcommand{\setnomname}[1]{\renewcommand\nomname{#1}}
-\renewcommand{\nomname}{术语与数学符号约定}
+\renewcommand{\nomname}{缩略词表}
 \RequirePackage{algorithm}
 \RequirePackage{algorithmic}
 \numberwithin{algorithm}{chapter}
