@@ -20,26 +20,31 @@
 \categorynumber{TP311} % 分类采用《中国图书资料分类法》
 \UDC{004.6}            %《国际十进分类法UDC》的类号
 \secretlevel{公开}    %学位论文密级分为"公开"、"内部"、"秘密"和"机密"四种
-\studentid{***}   %学号要完整，前面的零不能省略。
+\studentid{\quad }   %学号要完整，前面的零不能省略。\quad 
 \title{基于知识图谱的IT运维辅助系统设计与实现}{基于知识图谱的 \rotatebox{270}{IT} 运维辅助系统设计与分析}{}{}{Design and Implementation of IT Operation and Maintenance Assistant System Based on Knowledge Graph}{}
-\author{***}{***}
-\advisor{***}{教授}{***}{Prof.}
-\coadvisor{***}{高工}{***}{Ir.} % 没有% 可以不填
+\author{\quad }{\quad }
+\advisor{\quad }{教授}{\quad }{Prof.}
+\coadvisor{\quad }{高工}{\quad }{Ir.} % 没有% 可以不填
 \degreetype{工程硕士}{Master of Engineering} % 详细学位名称
 \major{软件工程}
 \submajor{软件工程}
-\defenddate{\today}
-\authorizedate{\today}
-\committeechair{***}
-\reviewer{***}{***}
+\defenddate{\quad }
+\authorizedate{\quad }
+\committeechair{\quad }
+\reviewer{\quad }{\quad }
 \department{东南大学软件学院}{SouthEast University}
-
-
 
 % \seuthesisthanks{本课题的研究来自于与阿里云合作项目}
 % \makebigcover
 
 \makecover
+\cleardoublepage
+
+% \pagenumbering{Roman}  %页码类型大写罗马数字
+% \section*{摘要}\label{sec00}  %加星号，即节标题不编号
+% \addcontentsline{toc}{section}{摘要}
+% https://blog.csdn.net/HEHEEH123/article/details/109776288
+
 \begin{abstract}{故障预测，IT运维，知识图谱，表示学习}
     随着互联网技术的迅猛发展，目前大多数应用软件都建立在一个庞大、繁杂、跨协议层的大型分布式集群中。这类分布式集群的技术、软件、配置通常会不断地演变，难以避免会发生故障。面对海量的监控数据和庞大的系统，IT（Information Technology）运维人员很难做出迅速、准确的运维决策来应对各种故障。近年来，智能运维 （Artificial Intelligence for IT Operations，AIOps）通过引入人工智能技术，提升了IT运维效率。
     % 已有的AIOps方案使用历史数据训练感知机、贝叶斯网、随机森林等机器学习模型，用于异常检测、异常分类、故障预测等以辅助运维，均只停留在算法层面，对知识表示和推理的积累比较少。在AIOps中引入知识图谱能够结构化整合多源异构数据，规范化展示系统运行状态。知识图谱也可以把人对系统的认知、过往的运维经验沉淀成计算机可表示积累的数据，并作为先验知识来辅助运维。另外，知识图谱中经过严格定义的结构化数据使其具备一定的推理与诊断能力，从而辅助IT运维人员进行线上诊断、故障预测等。
@@ -70,7 +75,7 @@
     %   \end{itemize}
 
 \end{abstract}
-
+\cleardoublepage
 % \begin{englishabstract}{Failure Prediction, ITOps, Knowledge Graph, Knowledge Graph Embedding}
 %     With the rapid development of internet technology, most applications are built in a large, complicated and distributed cluster across protocol layers. The technology, software and configuration of the distributed cluster are always evolving, and it is difficult to avoid various failures. In the face of massive monitoring data and huge systems, it is difficult for IT Ops(Operations) personnel to make quick and accurate decisions to prevent failures. AIOps (artificial intelligence for it operations) aims to use artificial intelligence technology to improve IT Ops efficiency.
     
@@ -93,6 +98,10 @@
 %     \end{itemize}
 % \end{englishabstract}
 
+% \section*{Abstract}\label{sec01}
+% \markboth{Abstract}{Abstract}  %页眉添加节标题  这行代码可以重置页眉页脚
+% \addcontentsline{toc}{section}{Abstract}
+
 \begin{englishabstract}{Failure Prediction, IT operation and maintenance, Knowledge Graph, Knowledge Graph Embedding}
 With the rapid development of internet technology, most applications are built in a large, complicated and distributed cluster across protocol layers. The technology, software and configuration of this kind of distributed cluster are always evolving, and it is difficult to avoid failure. Faced with massive monitoring data and huge systems, it is difficult for IT(Information Technology) operation and maintenance personnel to make quick and accurate operation and maintenance decisions to deal with various failures. In recent years, Artificial Intelligence for IT Operations (AIOps) has improved the efficiency of IT operation and maintenance by introducing artificial intelligence technology. 
 
@@ -110,9 +119,13 @@ Based on this, this paper proposes an IT operation and maintenance assistant tec
     
 To sum up, this paper uses historical data to build knowledge graph automatically, puts forward a representation learning model for this kind of knowledge graph, introduces knowledge graph into fault prediction, and finally designs and implements an IT operation and maintenance assistant system based on knowledge graph.
 \end{englishabstract}
+\cleardoublepage
 \setnomname{缩略词表}
+\cleardoublepage
 \tableofcontents
+\cleardoublepage
 \listofothers
+\cleardoublepage
 %===============================================================================
 
 % \begin{thenomenclature} 

@@ -1,5 +1,8 @@
+% 带中文的术语
+
 \begin{thenomenclature} 
     \nomgroup{A}
+        \nomenclature{CCD}{charge-coupled device\nomchinese{电荷耦合器件}}
         \item [{IT}]\begingroup Information Technology\nomeqref {1.0}\nompageref{6}
         \item [{Ops}]\begingroup Operations\nomeqref {1.0} \nompageref{6}
         \item [{AIOps}]\begingroup Artificial Intelligence for IT Operations\nomeqref {1.0}  \nompageref{6}

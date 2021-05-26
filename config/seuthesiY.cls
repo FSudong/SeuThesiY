@@ -181,15 +181,15 @@ BoldItalicFont=timesbi.ttf
 \RequirePackage{fancyhdr}
 \fancypagestyle{seustyle}{%
     \fancyhf{}
-    \fancyhead[CE]{\xiaowuhao\universityname{}\@thesistype}
-    \fancyhead[CO]{ \xiaowuhao\leftmark}
+    \fancyhead[CE]{\xiaowuhao\universityname{}\@thesistypepagehead} %偶数
+    \fancyhead[CO]{ \xiaowuhao\leftmark} % 奇数
     \fancyfoot[CO,CE]{\thepage}
 }
 \pagestyle{seustyle}
 
 \fancypagestyle{nom}{%
     \fancyhf{} 
-    \fancyhead[CO]{\xiaowuhao\universityname{}\@thesistype}
+    \fancyhead[CO]{\xiaowuhao\universityname{}\@thesistypepagehead}
     \fancyhead[CE]{ \xiaowuhao\nomname}
     \fancyfoot[CO,CE]{\thepage}
 }
@@ -666,6 +666,7 @@ BoldItalicFont=timesbi.ttf
     \addcontentsline{toc}{chapter}{\@abstracttitle}
     \chapter*{\@abstracttitle}
     \setcounter{page}{1}
+    \markboth{摘要}{摘要}
 }
 {
     \par
@@ -693,6 +694,7 @@ BoldItalicFont=timesbi.ttf
         chapter/nameformat=\large\heiti,
         chapter/titleformat=\large\heiti
     }
+    \markboth{Abstract}{Abstract}
 }
 {
     \par

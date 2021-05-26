@@ -1,6 +1,6 @@
 % \documentclass[algorithmlist, figurelist,tablelist, nomlist, master, onside]{config/seuthesiY}
-% \documentclass[figurelist,tablelist, nomlist, engineering, openany]{config/seuthesiY}
-\documentclass[figurelist,tablelist,nomlist,engineering, openany]{config/seuthesiY}
+% \documentclass[figurelist,tablelist, nomlist, engineering, openany,ctexbook]{config/seuthesiY}
+\documentclass[figurelist,tablelist,nomlist,engineering]{config/seuthesiY}
 % \documentclass[ engineering, openany]{config/seuthesiY}
 %===============================================================================
 % 采用的编译方式为  XELATEX -→  BIBER -→    XELATEX -→    XELATEX
@@ -14,6 +14,7 @@
 %       rmargin=2.73cm,bindingoffset=0.25in,heightrounded}
 % \geometry{lmargin=2.54cm,rmargin=2.54cm}
 \usepackage{blindtext}
+
 % %biblatex宏包的参考文献数据源加载方式
 \addbibresource[location=local]{config/seuthesiY.bib}
 %设置图标序号
@@ -26,11 +27,14 @@
 \newtheorem{definition}{Definition}
 % \setlength{\baselineskip}{20pt}%固定行距
 \linespread{1.25}%修改行距
+% \ctexset {chapter = {pagestyle = fancy}}
+\fancypagestyle{plain}{
+  \pagestyle{seustyle}
+}
 % \hypersetup{colorlinks=true,linkcolor=black,citecolor=black} %颜色设置
 \begin{document}
 \begin{sloppypar}
 \input{chapter/abstract.tex}
-
 \mainmatter
 
 \input{chapter/Intro.tex}
