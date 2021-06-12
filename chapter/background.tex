@@ -1,43 +1,61 @@
-\chapter{背景知识}
-本章主要对本文所涉及的支持向量机、关系图卷积神经网络、双向长短期记忆神经网络、注意力机制等展开了详细的描述，为下文第三章、第四章和第五章的内容做好铺垫。
+\chapter{相关技术}
+本章主要对本文所涉及的概念及技术展开详细的描述，为下文第三章、第四章和第五章的内容做好铺垫。
 
-在构建组件-事件知识图谱时，第三章通过实验分析最终选用了支持向量机发掘事件因果关系，因此本章第一节对支持向量机进行了介绍。第四章组件-事件知识图谱表示学习是基于关系图卷积神经网络提出的，为了便于理解这部分内容，本章第二节对关系图卷积神经网络进行了必要地介绍。第五章基于知识图谱的故障预测是基于双向长短期记忆网络提出的，所以本章第三节对双向长短期记忆网络展开介绍。另外，第四章和第五章所提出的方法，都引入了注意力机制，所以本章第四节又介绍了注意力机制。
+本章首先在第一节介绍了智能运维的相关概念及发展路线。随后，因为第三章构建组件-事件知识图谱时结合了多种构建方式，所以本章第二节介绍了知识图谱的定义、构建和表示学习相关概念。第四章组件-事件知识图谱表示学习是基于关系图卷积神经网络提出的，为了便于理解这部分内容，本章第三节对关系图卷积神经网络进行了必要地介绍。第五章基于知识图谱的故障预测是基于双向长短期记忆网络提出的，所以本章第四节对双向长短期记忆网络展开介绍。另外，第四章和第五章所提出的方法，都引入了注意力机制，所以本章第五节又介绍了注意力机制。
+\section{智能运维}
+随着数字化程度的不断提高，分布式系统、云计算等新技术、新组件的不断引入，运维在保险、电信、银行、证券、工业制造、政府部门、能源、互联网等行业的重要性越来越大。用户和企业在实际运维中，需要从多方面进行考虑，包括质量、效率、性能、安全、成本等。当信噪比极低的海量监测数据聚集在一起时，这些多源、多模态数据，很难被整合起来解决故障。
 
-\section{支持向量机}
-支持向量机（Support Vector Machines，SVM）是机器学习和模式分类领域的经典模型\cite{cherkassky2004practical}，通过在输入空间中实现线性或非线性分离面来实现分类。在支持向量分类中，分离函数可以表示为与支持向量相关的核的线性组合，如式\ref{bk-svm}所示：
-\begin{equation}
-    \centering
-    f(x)=\sum_{x_{j} \in S} \alpha_{j} y_{j} K\left(x_{j}, x\right)+b
-    \label{bk-svm}
-\end{equation}
-其中$x_{i}$表示训练模式，$y_{i} \in\{+1,-1\}$表示相应的类标签，$S$表示支持向量集\cite{cherkassky2004practical}。其对偶式如式子\ref{bk-svm-op}所示：
-\begin{equation}
-    \centering
-    \min _{0 \leq \alpha_{i} \leq C} W=\frac{1}{2} \sum_{i, j} \alpha_{i} Q_{i j} \alpha_{j}-\sum_{i} \alpha_{i}+b \sum_{i} y_{i} \alpha_{i}
-    \label{bk-svm-op}
-\end{equation}
-其中$\alpha_{i}$是相应的协同系数，$b$是偏移系数，$Q_{i j}=y_{i} y_{j} K\left(x_{i}, x_{j}\right)$是一个对称的正定核矩阵，$C$是在不可分的情况下用来惩罚误差点的参数\cite{cherkassky2004practical}。对偶的Karush-Kuhn-Tucker（KKT）条件如式\ref{bk-svm-KKT}和式\ref{bk-svm-KKT-2}所示：
-\begin{equation}
-    \centering
-    g_{i}=\frac{\partial W}{\partial \alpha_{i}}=\sum_{i} Q_{i j} \alpha_{j}+y_{i} b-1=y_{i} f\left(x_{i}\right)-1
-    \label{bk-svm-KKT}
-\end{equation}
-\begin{equation}
-    \centering
-    \frac{\partial W}{\partial b}=\sum_{j} y_{j} \alpha_{j}=0
-    \label{bk-svm-KKT-2}
-\end{equation}
+人工智能（Artificial Intelligence，AI）是一种模拟人行为的计算机技术。随着时代的发展，AI从1.0时代的“知识驱动+算法+算力”，逐渐演变为2.0时代的“数据驱动+算法+算力”，即机器学习和深度学习。而随着技术的发展，机器学习和深度学习也遇到了瓶颈，“AI 3.0”的概念被提了出来\cite{ai30}，它整合了1.0时代的“知识驱动+算法+算力”和2.0时代的“数据驱动+算法+算力”，最终形成3.0时代的“知识+数据+算法+算力”。
 
-其将训练集划分为支持向量集$S$$\left(0<\alpha_{i}<C, g_{i}=0\right)$，误差集$E$$\left(\alpha_{i}=C, g_{i}<0\right)$和分类集$R$$\left(\alpha_{i}=0, g_{i}>0\right)$\cite{cauwenberghs2001incremental}。如果误差点用惩罚因子$C^{\prime}$进行二次罚分，那么这表明问题已经被简化为$C=\infty$的可分情形\cite{frie1998kernel}。内核函数可以修改为式\ref{bk-svm-modekernel}所示。
-\begin{equation}
-    \centering
-    K^{\prime}\left(x_{i}, x_{j}\right)=K\left(x_{i}, x_{j}\right)+\frac{1}{C^{\prime}} \delta_{i j}
-    \label{bk-svm-modekernel}
-\end{equation}
+类比人工智能的定义，智能运维（AIOps）可定义为任何模拟运维人员行为的计算机技术，可以基于专家知识，基于自动化、机器学习、深度学习或者它们的某种组合。AIOps的发展路线跟自动驾驶的分级类似，可以被分成5个级别。基础阶段是0级，即采用传统人工运维方法；在1级别中，会有一些异常的自动检测，但故障分析和处理都是人工操作；在2级和3级中，自动处置的比重会在故障分析中逐渐加大；在可预见的未来可以达到4级，该级别中只有一些特殊的场景需要人工干预，其他场景的应急排障都是自动决策、自动处置；最终的第5级则对应着完全自动化的无人运维。
 
-其中当$i=j$时$\delta_{i j}=1$，否则$\delta_{i j}=0$。这个公式的优点是SVM问题可以被简化为线性可分情形\cite{keerthi2000fast}。
+然而，目前已有的AIOps技术，主要集中在使用机器学习方法来提升运维效率，缺乏对运维知识的有效整合与利用，即停留在AI 2.0阶段。本文尝试践行“知识+数据+算法+算力”的AI 3.0理念，构建完善高细粒度的知识图谱并引入到智能运维中。为此，本文着重研究了多源异构数据整合、运维知识表示和故障预测，以实现便捷、高效、可靠的AIOps，用来保证分布式集群的安全稳定。
 
-由上可见，训练SVM时要解一个二次优化问题，这需要使用来自数值库的优化例程。另外，解二次优化问题是计算密集型的，可能会遇到稳定性问题，并且实现起来非常困难\cite{zeng2008fast}。因此，序列最小优化(Sequential Minimal Optimization，SMO)\cite{keerthi2000fast}和最近点算法(NearestPoint Algorithm ，NPA)\cite{zeng2008fast}，相继被提出并成功克服了这个问题。
+\section{知识图谱}
+% \cite{bordes2012joint,bordes2011learning,wang2014knowledge,lin2015learning,ji2015knowledge}
+作为结构化人类知识的一种形式，知识图谱已经引起了学术界和工业界的极大关注\cite{ji2021survey}。知识图谱是事实的结构化表示，由实体、关系和语义描述组成。实体可以是现实世界的对象和抽象概念，关系表示实体之间的关系以及实体的语义描述，并且它们的关系包含类型和属性，具有明确的含义。知识图谱这个术语与知识库同义，只是略有不同。当它涉及形式语义时，它可以作为解释和推理事实的知识库。知识可以用资源描述框架下形如$(head,relation,tail)$或$(subject,predicate,object)$的事实三元组表示，例如(Albert Einstein, WinnerOf, Nobel Prize)。当考虑知识图谱的图结构时，它可以被看作一个图，节点表示着实体，边表示着关系。
+
+在分布式集群中，每个故障的产生都对应着一张横跨硬件、软件、日志和指标时序数据的触发拓扑图。这样的触发拓扑图可以作为知识沉淀下来，用于指导此后的运维工作。知识图谱作为一种结构化的语义知识库，可以有效地保存有向无环的触发拓扑图。
+
+通常知识图谱构建有自顶向下和自底向上两种构建方式\cite{liqiao2016kgconstrut-review}。自顶向下构建是指借助百科类网站等结构化数据源，从高质量数据中提取本体和模式信息，加入到知识库中；自底向上构建，则是借助一定的技术手段，从公开采集的数据中提取出资源模式，选择其中置信度较高的新模式，经人工审核之后，加入到知识库中，包括3个层次:信息抽取、知识融合及知识加工。在IT运维场景中，组件部分可以依靠云服务商网站结构化的数据源自顶向下进行构建，以表示系统组件信息及关联关系。而事件部分则需依靠日志文件、指标时序曲线等数据源自底向上进行构建，但没有直接可用的先验信息获取事件间的关系。
+
+在知识图谱表示学习方面，实体和关系会被映射到低维向量\cite{wang2017knowledge,lin2018knowledge}。本文在章节\ref{kge-research}已经进行了详尽的相关工作调研。最终发现，在云计算场景下的组件-事件知识图谱中，实体会随着上下文场景变化有不同的含义，需要动态地表示，目前已有的知识表示学习工作均不能应对该问题。
+
+% \section{支持向量机}
+% 支持向量机（Support Vector Machines，SVM）是机器学习和模式分类领域的经典模型\cite{cherkassky2004practical}，通过在输入空间中实现线性或非线性分离面来实现分类。在支持向量分类中，分离函数可以表示为与支持向量相关的核的线性组合，如式\ref{bk-svm}所示：
+% \begin{equation}
+%     \centering
+%     f(x)=\sum_{x_{j} \in S} \alpha_{j} y_{j} K\left(x_{j}, x\right)+b
+%     \label{bk-svm}
+% \end{equation}
+% 其中$x_{i}$表示训练模式，$y_{i} \in\{+1,-1\}$表示相应的类标签，$S$表示支持向量集\cite{cherkassky2004practical}。其对偶式如式子\ref{bk-svm-op}所示：
+% \begin{equation}
+%     \centering
+%     \min _{0 \leq \alpha_{i} \leq C} W=\frac{1}{2} \sum_{i, j} \alpha_{i} Q_{i j} \alpha_{j}-\sum_{i} \alpha_{i}+b \sum_{i} y_{i} \alpha_{i}
+%     \label{bk-svm-op}
+% \end{equation}
+% 其中$\alpha_{i}$是相应的协同系数，$b$是偏移系数，$Q_{i j}=y_{i} y_{j} K\left(x_{i}, x_{j}\right)$是一个对称的正定核矩阵，$C$是在不可分的情况下用来惩罚误差点的参数\cite{cherkassky2004practical}。对偶的Karush-Kuhn-Tucker（KKT）条件如式\ref{bk-svm-KKT}和式\ref{bk-svm-KKT-2}所示：
+% \begin{equation}
+%     \centering
+%     g_{i}=\frac{\partial W}{\partial \alpha_{i}}=\sum_{i} Q_{i j} \alpha_{j}+y_{i} b-1=y_{i} f\left(x_{i}\right)-1
+%     \label{bk-svm-KKT}
+% \end{equation}
+% \begin{equation}
+%     \centering
+%     \frac{\partial W}{\partial b}=\sum_{j} y_{j} \alpha_{j}=0
+%     \label{bk-svm-KKT-2}
+% \end{equation}
+
+% 其将训练集划分为支持向量集$S$$\left(0<\alpha_{i}<C, g_{i}=0\right)$，误差集$E$$\left(\alpha_{i}=C, g_{i}<0\right)$和分类集$R$$\left(\alpha_{i}=0, g_{i}>0\right)$\cite{cauwenberghs2001incremental}。如果误差点用惩罚因子$C^{\prime}$进行二次罚分，那么这表明问题已经被简化为$C=\infty$的可分情形\cite{frie1998kernel}。内核函数可以修改为式\ref{bk-svm-modekernel}所示。
+% \begin{equation}
+%     \centering
+%     K^{\prime}\left(x_{i}, x_{j}\right)=K\left(x_{i}, x_{j}\right)+\frac{1}{C^{\prime}} \delta_{i j}
+%     \label{bk-svm-modekernel}
+% \end{equation}
+
+% 其中当$i=j$时$\delta_{i j}=1$，否则$\delta_{i j}=0$。这个公式的优点是SVM问题可以被简化为线性可分情形\cite{keerthi2000fast}。
+
+% 由上可见，训练SVM时要解一个二次优化问题，这需要使用来自数值库的优化例程。另外，解二次优化问题是计算密集型的，可能会遇到稳定性问题，并且实现起来非常困难\cite{zeng2008fast}。因此，序列最小优化(Sequential Minimal Optimization，SMO)\cite{keerthi2000fast}和最近点算法(NearestPoint Algorithm ，NPA)\cite{zeng2008fast}，相继被提出并成功克服了这个问题。
 
 
 \section{关系图卷积神经网络}\label{RGCN}
@@ -84,38 +102,32 @@ $h_{i}^{(l)} \in \mathbb{R}^{d^{(l)}}$是结点$v_{i}$在$l$-th层神经网络�
 
 其中$\mathcal{Y}$是有标签的结点索引集，$h_{i k}^{(L)}$是索引为$i$的带标签结点对应的网络输出的第$k$维的实数值。$t_{i k}$表示该实体的标注向量第$k$维的实数值。最后使用梯度下降算法训练模型参数即可。
 
-链接预测：预测事实存在还是不存在（即三元组$(head,relation,tail)$是否存在）。有向、有标注的知识图谱可以使用符号式表示，即$G=(\mathcal{V}, \mathcal{E}, \mathcal{R})$。训练过程中没有使用完整的边集$\mathcal{E}$，而是使用了其子集$\hat{\mathcal{E}}$。模型会给候选边$(h, r, t)$一个分数$f(h, r, t)$，用以确定该边属于$\mathcal{E}$的可能性有多大。
-为了进行链接预测，该文献引入了图编码-解码模型，编码部分使用上述图神经网络编码实体，解码部分对应着一个打分函数。编码器将每一个实体$v_{i} \in \mathcal{V}$映射到一个实数向量$e_{i} \in \mathbb{R}^{d}$。解码器会根据编码器输出的实体表示预测链接，具体实现上就是通过形如$s: \mathbb{R}^{d} \times \mathcal{R} \times \mathbb{R}^{d} \rightarrow \mathbb{R}$的函数给三元组$(head, relation, tail)$评分。编码器选用了上述的图卷积网络，解码器选用了文献\parencite{yang2014embedding}中的DistMult模型。DistMult模型中每一个关系$r$都与对角矩阵$R_{r} \in \mathbb{R}^{d \times d}$相关，候选三元组可以用式\ref{rgcn-link-score}计算得到评分。
+链接预测：预测事实存在还是不存在（即三元组$(head,relation,tail)$是否存在）。有向、有标注的知识图谱可以使用符号式表示，即$G=(\mathcal{V}, \mathcal{E}, \mathcal{R})$，其中$v_i\in\mathcal{V}$表示结点，$\left(v_i,r,v_j\right)\in\mathcal{E}$表示被标注的边，$r\in\mathcal{R}$表示关系类型。训练过程中没有使用完整的边集$\mathcal{E}$，而是使用了其子集$\hat{\mathcal{E}}$。模型会给候选边$(h, r, t)$一个分数$f(h, r, t)$，用以确定该边属于$\mathcal{E}$的可能性有多大。
+为了进行链接预测，该文献引入了图编码-解码模型，编码部分使用上述图神经网络编码实体，解码部分对应着一个打分函数。编码器将每一个实体$v_{i} \in \mathcal{V}$映射到一个实数向量$e_{i} \in \mathbb{R}^{d}$。解码器会根据编码器输出的实体表示预测链接，具体实现上就是通过形如$s: \mathbb{R}^{d} \times \mathcal{R} \times \mathbb{R}^{d} \rightarrow \mathbb{R}$的函数给三元组$(head, relation, tail)$评分。编码器选用了上述的图卷积网络，解码器选用了文献\parencite{yang2014embedding}中的DistMult模型。DistMult模型中每一个关系$r$都与对角矩阵$R_{r} \in \mathbb{R}^{d \times d}$相关，候选三元组可以用式\ref{rgcn-link-score}计算得到评分，其中$e_{h}$为head对应的实值向量，$e_{t}$为tail对应的实值向量。
 \begin{equation}
     f(h, r, t)=e_{h}^{T} R_{r} e_{t}
     \label{rgcn-link-score}
 \end{equation}
-训练时，使用负采样为每个三元组负采样$\omega$个负样本。负样本来自于将正确的三元组的head或tail随机地替换掉。最终以正确的三元组评分要高于负样本为目的，使用了以下式\ref{rgcn-link-loss}为损失函数。
+训练时，使用负采样为每个三元组负采样$\omega$个负样本。负样本来自于将正确的三元组的head或tail随机地替换掉。最终以正确的三元组评分要高于负样本为目的，使用式\ref{rgcn-link-loss}计算损失值。
 
 \begin{equation}
     \begin{aligned}
-        \mathcal{L}=-\frac{1}{(1+\omega)|\hat{\mathcal{E}}|} & \sum_{(h, r, t, y) \in \mathcal{T}} y \log l(f(h, r, t))+\\
-        &(1-y) \log (1-l(f(h, r, t)))
+        \mathcal{L}=-\frac{1}{(1+\omega)|\hat{\mathcal{E}}|} & \sum_{(h, r, t, y) \in \mathcal{T}} y \log l(f(h, r, t)) + (1-y) \log (1-l(f(h, r, t)))
         \end{aligned}
     \label{rgcn-link-loss}
 \end{equation}
-其中$\mathcal{T}$是包含了正确和错误三元组的集合，而$l$是sigmoid函数。$y$是三元组的标签，$y=1$表示该三元组是正确的，$y=0$表示该三元组是错误的。在计算得到损失值后，会使用随机梯度下降算法更新模型参数。
+其中$\mathcal{T}$是包含了正确和错误三元组的集合，而$l(.)$是sigmoid函数。$y$是三元组的标签，$y=1$表示该三元组是正确的，$y=0$表示该三元组是错误的。$f(.)$是上文式\ref{rgcn-link-score}所示的三元组评分函数。$\hat{\mathcal{E}}$是带标注边的子集。$\omega$为每个三元组负采样的负样本个数。在计算得到损失值后，会使用随机梯度下降算法更新模型参数。
 
 \section{双向长短期记忆神经网络}\label{memory-net-section}
-本节主要介绍编码时序数据的双向长短期记忆神经网络（Bi-directional Long Short-Term Memory，BiLSTM）。双向长短期记忆神经网络被广泛运用在许多场景中，本文以文献\parencite{gao2020task}中使用该模型进行故障预测为例，展开具体介绍。本节会进一步分为两小节分别介绍 BiLSTM 的模型结构和优化目标。
+本节主要介绍编码时序数据的双向长短期记忆神经网络（Bi-directional Long Short-Term Memory，BiLSTM）。双向长短期记忆神经网络被广泛运用在许多场景中，本文以文献\parencite{gao2020task}中使用该模型进行故障预测为例，展开具体介绍。本节会进一步分为两小节分别介绍模型结构和优化目标。
 \subsection{模型结构}
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=.7\textwidth]{bilstm-model.pdf}
-    \caption{基于双向长短期记忆神经网络的故障预测模型\label{bilstm-model}}
-\end{figure}
 图\ref{bilstm-model}所示为文献\parencite{gao2020task}用于故障预测的模型架构，可见其包含输入层、BiLSTM层、输出层和逻辑回归层。
 
 输入层主要是数据的嵌入层。文献\parencite{gao2020task}拼接了同一时间点的CPU使用率、内存使用率、未映射页缓存、平均磁盘I/O时间、磁盘使用率、任务优先级、提交时间和提交次数共计8个特征。这样之后每个时间点都是一个8维的嵌入向量。
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=.6\textwidth]{lstm-cell.png}
-    \caption{双向长短期记忆网络神经单元\label{lstm-cell}}
+    \includegraphics[width=.7\textwidth]{bilstm-model.pdf}
+    \caption{基于双向长短期记忆神经网络的故障预测模型\label{bilstm-model}}
 \end{figure}
 
 BiLSTM层完成了对时序数据的特征编码。该层会将输入的时序数据分别进行前向编码和后向编码，再将得到的前向隐状态和后向隐状态拼接得到最终的隐状态。经过上述步骤后，每个时间点的隐状态都会得到正向反向的上下文信息。图\ref{lstm-cell}展示了LSTM神经元内部的结构，可见其主要利用了非线性函数选择数据保存还是舍弃。具体实现上，每个神经元内部共有三个门控制其状态，包括输入门、遗忘门和输出门。输入门决定了应该更新哪个神经元状态，遗忘门决定了应该忽视掉什么信息，输出门决定输出隐状态的哪部分信息。该过程可以用公式\ref{lstm-cell-equation}表示：
@@ -130,9 +142,14 @@ BiLSTM层完成了对时序数据的特征编码。该层会将输入的时序�
     \end{array}
     \label{lstm-cell-equation}
 \end{equation}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.8\textwidth]{lstm-cell.png}
+    \caption{双向长短期记忆网络神经单元\cite{gao2020task}\label{lstm-cell}}
+\end{figure}
 其中$w_{gx}, w_{nx}, w_{fx} $和$w_{ox} $是记忆单元输入$x_{i}$的权重系数。$w_{gh}, w_{nh}, w_{fh} $和$w_{oh} $是记忆单元上一步输出$h_{i-1}$的权重系数。$b_{g}, b_{n}, b_{f},$ 和 $b_{o}$分别为输入信息$g_{i}$、输入门$n_{i}$、遗忘门$f_{i}$和输出门$o_{i}$对应的偏置系数。而$s_{i}$和$s_{i-1}$则分别为时间$i$和$i-1$的神经元状态。另外，$\odot$代表点乘，$\sigma$代表sigmoid激活函数，$\varphi$代表tanh激活函数。
 
-输出层目的在于将输入序列中每个记忆单元隐状态整合起来。具体方式是将输入$X=\left\{x_{1}, x_{2} \ldots x_{m}\right\}$传入Bi-LSTM得到的表示序列$\left\{h_{1}, h_{2} \ldots h_{m}\right\}$进行式\ref{mean-pool}中所示的平均池化操作，得到序列表示向量$\widehat{h}$。
+输出层目的在于将输入序列中每个记忆单元隐状态整合起来。具体方式是将输入$X=\left\{x_{1}, x_{2} \ldots x_{m}\right\}$传入Bi-LSTM得到的表示序列$\left\{h_{1}, h_{2} \ldots h_{m}\right\}$进行式\ref{mean-pool}中所示的平均操作，得到序列表示向量$\widehat{h}$。
 \begin{equation}
     \widehat{h}=\frac{1}{m} \sum_{i=1}^{m} h_{i}
     \label{mean-pool}
@@ -161,4 +178,4 @@ BiLSTM层完成了对时序数据的特征编码。该层会将输入的时序�
 在多媒体推荐任务中，现有的协同过滤系统忽略了用户与多媒体内容间的隐含交互。文献\parencite{chen2017attentive}提出了两层注意机制来提取隐含交互。其中，底层自适应地选择组件级的隐含交互。上层自适应地选择项目级的隐含交互。两部分隐含交互会被结合起来输入经典的协同过滤模型。
 
 \section{本章小结}
-本章对本文中后续会涉及到的相关背景知识进行了介绍。本章首先介绍了支持向量机，支持向量机是进行分类的经典模型；其次介绍了关系图卷积神经网络，第四章会使用其获取实体上下文信息，实现组件-事件知识图谱实体的动态表示；随后介绍了双向长短期记忆神经网络，为第五章结合知识图谱和事件序列进行故障预测做了铺垫；最后介绍了注意力机制，第四章和第五章均使用其关注有效信息。
+本章对本文中后续会涉及到的相关技术进行了介绍。本章首先介绍了智能运维和知识图谱的相关概念；其次介绍了关系图卷积神经网络，第四章会使用其获取实体上下文信息，实现组件-事件知识图谱实体的动态表示；随后介绍了双向长短期记忆神经网络，为第五章结合知识图谱和事件序列进行故障预测做了铺垫；最后介绍了注意力机制，第四章和第五章均使用其关注有效信息。

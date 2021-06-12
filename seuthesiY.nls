@@ -1,28 +1,28 @@
-% 带中文的术语
-
+%https://www.latexstudio.net/archives/9704.html  命令行生成 nls文件
 \begin{thenomenclature} 
-    \nomgroup{A}
-        \nomenclature{CCD}{charge-coupled device\nomchinese{电荷耦合器件}}
-        \item [{IT}]\begingroup Information Technology\nomeqref {1.0}\nompageref{6}
-        \item [{Ops}]\begingroup Operations\nomeqref {1.0} \nompageref{6}
-        \item [{AIOps}]\begingroup Artificial Intelligence for IT Operations\nomeqref {1.0}  \nompageref{6}
-        \item [{API}]\begingroup Application Programming Interface\nomeqref {1.0}\nompageref{6}
-        \item [{KPI}]\begingroup Key Performance Indicators\nomeqref {1.0}\nompageref{6}
-        \item [{SLB}]\begingroup Server Load Balancer\nomeqref {1.0} \nompageref{6}
-      
-        \item [{ECS}]\begingroup Elastic Compute Service\nomeqref {1.0} \nompageref{6}
-        \item [{RNN}]\begingroup Recurrent Neural Networks\nomeqref {1.0} \nompageref{6}
-        \item [{LSTM}]\begingroup Long Short-Term Memory\nomeqref {1.0} \nompageref{6}
-        \item [{BiLSTM}]\begingroup Bi-directional Long Short-Term Memory\nomeqref {1.0} \nompageref{6}
-        \item [{SVM}]\begingroup Support Vector Machines\nomeqref {1.0} \nompageref{6}
-        \item [{RGCN}]\begingroup Relational Graph Convolutional Networks\nomeqref {1.0} \nompageref{6}
-        \item [{VPC}]\begingroup Virtual Private Cloud\nomeqref {1.0} \nompageref{6}
-        \item [{DTW}]\begingroup Dynamic Time Warping\nomeqref {1.0} \nompageref{6}
-        \item [{k8s}]\begingroup kubeneters\nomeqref {1.0} \nompageref{6}
-        \item [{MR}]\begingroup Mean Rank\nomeqref {1.0} \nompageref{6}
-        \item [{Hits@n}]\begingroup Hits at n\nomeqref {1.0} \nompageref{6}
-        \item [{HSMM}]\begingroup Hidden Semi-Markov Model\nomeqref {1.0} \nompageref{6}
-        \item [{B/S}]\begingroup Browser/Server\nomeqref {1.0} \nompageref{6}
-        \item [{SLS}]\begingroup Log Service\nomeqref {1.0} \nompageref{6}
-
+\nomgroup{A}
+    \item [{IT}]\begingroup  \nomdescr {Information Technology} \nomdescrchn {信息技术} \nomeqref {0.0}\nompageref{1}
+    \item [{Ops}]\begingroup Operations \nomdescrchn {运维} \nomeqref {1.0} \nompageref{6}
+    \item [{AI}]\begingroup Artificial Intelligence \nomdescrchn {人工智能} \nomeqref {1.0}  \nompageref{6}
+    \item [{AIOps}]\begingroup Artificial Intelligence for IT Operations \nomdescrchn {智能运维} \nomeqref {1.0}  \nompageref{6}
+    \item [{API}]\begingroup Application Programming Interface \nomdescrchn {应用程序接口} \nomeqref {1.0}\nompageref{6}
+    \item [{KPI}]\begingroup Key Performance Indicators \nomdescrchn {关键绩效指标} \nomeqref {1.0}\nompageref{6}
+    \item [{SLB}]\begingroup Server Load Balancer  \nomdescrchn {负载均衡器} \nomeqref {1.0} \nompageref{6}
+    
+    \item [{ECS}]\begingroup Elastic Compute Service  \nomdescrchn {弹性计算服务} \nomeqref {1.0} \nompageref{6}
+    \item [{RNN}]\begingroup Recurrent Neural Networks \nomdescrchn {循环神经网络}\nomeqref {1.0} \nompageref{6}
+    \item [{LSTM}]\begingroup Long Short-Term Memory \nomdescrchn {长短期记忆神经网络} \nomeqref {1.0} \nompageref{6}
+    \item [{BiLSTM}]\begingroup Bi-directional Long Short-Term Memory \nomdescrchn {双向长短期记忆神经网络}\nomeqref {1.0} \nompageref{6}
+    \item [{SVM}]\begingroup Support Vector Machines \nomdescrchn {支持向量机} \nomeqref {1.0} \nompageref{6}
+    \item [{RGCN}]\begingroup Relational Graph Convolutional Networks \nomdescrchn {关系图卷积神经网络}\nomeqref {1.0} \nompageref{6}
+    \item [{VPC}]\begingroup Virtual Private Cloud \nomdescrchn {虚拟私有云}\nomeqref {1.0} \nompageref{6}
+    \item [{DTW}]\begingroup Dynamic Time Warping \nomdescrchn {动态时间规整}\nomeqref {1.0} \nompageref{6}
+    \item [{k8s}]\begingroup kubernetes \nomdescrchn {容器集群管理系统} \nomeqref {1.0} \nompageref{6}
+    \item [{DKGE}]\begingroup Dynamic Knowledge Graph Embedding \nomdescrchn {动态知识图谱表示学习} \nomeqref {1.0} \nompageref{6}
+    \item [{FPKG}]\begingroup Fault Prediction with Knowledge Graph \nomdescrchn {基于知识图谱的故障预测} \nomeqref {1.0} \nompageref{6}
+    \item [{MR}]\begingroup Mean Rank \nomdescrchn {平均排名} \nomeqref {1.0} \nompageref{6}
+    \item [{Hits@n}]\begingroup Hits at n \nomdescrchn {正确结果在前n名的占比} \nomeqref {1.0} \nompageref{6}
+    \item [{HSMM}]\begingroup Hidden Semi-Markov Model \nomdescrchn {隐式半马尔可夫模型}\nomeqref {1.0} \nompageref{6}
+    \item [{B/S}]\begingroup Browser/Server \nomdescrchn {浏览器/服务器模式}\nomeqref {1.0} \nompageref{6}
+    \item [{SLS}]\begingroup Log Service \nomdescrchn {日志服务}\nomeqref {1.0} \nompageref{6}
 \end{thenomenclature}

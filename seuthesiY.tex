@@ -1,6 +1,6 @@
 % \documentclass[algorithmlist, figurelist,tablelist, nomlist, master, onside]{config/seuthesiY}
-% \documentclass[figurelist,tablelist, nomlist, engineering, openany,ctexbook]{config/seuthesiY}
-\documentclass[figurelist,tablelist,nomlist,engineering]{config/seuthesiY}
+% \documentclass[AutoFakeBold,figurelist,tablelist, nomlist, engineering, openany,ctexbook]{config/seuthesiY}
+\documentclass[algorithmlist, figurelist,tablelist,nomlist,engineering,openany,onside]{config/seuthesiY}
 % \documentclass[ engineering, openany]{config/seuthesiY}
 %===============================================================================
 % 采用的编译方式为  XELATEX -→  BIBER -→    XELATEX -→    XELATEX
@@ -14,26 +14,92 @@
 %       rmargin=2.73cm,bindingoffset=0.25in,heightrounded}
 % \geometry{lmargin=2.54cm,rmargin=2.54cm}
 \usepackage{blindtext}
+\usepackage{nomencl}
+\usepackage{algorithm, algorithmic}
+% \usepackage[ruled]{algorithm2e}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{enumitem}
+% [itemsep=0 pt,topsep = 0 pt,parsep =0pt,partopsep=0pt]
+\usepackage{listings}
+\usepackage{fontspec}
+\usepackage{color,xcolor}
+\usepackage{xeCJK}
+\renewcommand{\today}{2021 年 06 月 02 日}
+\renewcommand{\todayeng}{June 2021}
+% \renewcommand{\today}{\number\year 年 \number\month 月 \number\day 日}
+% \setmonofont[Mapping={}]{Monaco}    %英文引号之类的正常显示，相当于设置英文字体
+% \setsansfont{Monaco} %设置英文字体 Monaco, Consolas,  Fantasque Sans Mono
+% \setmainfont{Monaco} %设置英文字体
+% \setCJKmainfont{微软雅黑}  %中文字体设置
+%\setCJKsansfont{楷体} %设置中文字体
+%\setCJKmonofont{} %设置中文字体
+\DefineBibliographyStrings{english}{in={}}% 去除in
+\DefineBibliographyStrings{english}{incn={}}
+\lstset{
+  % https://zhuanlan.zhihu.com/p/261667944
+    % numbers=left, 
+    % numberstyle= \tiny, 
+    % keywordstyle= \color{ blue!70},
+    % commentstyle= \color{red!50!green!50!blue!50}, 
+    % breaklines,
+    % basicstyle=\small,
+    % basicstyle=\footnotesize\ttfamily,
+    basicstyle=\small\ttfamily,
+    frame=None, % 阴影效果
+    % rulesepcolor= \color{ red!20!green!20!blue!20} ,
+    escapeinside=``, % 英文分号中可写入中文
+    xleftmargin=2em,
+    xrightmargin=2em, 
+    % aboveskip=1em,
+    language=c++,
+    captionpos=b,
+}
 
 % %biblatex宏包的参考文献数据源加载方式
 \addbibresource[location=local]{config/seuthesiY.bib}
 %设置图标序号
 \renewcommand {\thetable} {\thechapter{}-\arabic{table}}
 \renewcommand {\thefigure} {\thechapter{}-\arabic{figure}}
+\renewcommand {\thealgorithm} {\thechapter{}-\arabic{algorithm}}
 \usepackage{caption}
 \DeclareCaptionLabelSeparator{twospace}{\ ~}   %%这三条语句即可
 \captionsetup{labelsep=twospace}
 
 \newtheorem{definition}{Definition}
 % \setlength{\baselineskip}{20pt}%固定行距
-\linespread{1.25}%修改行距
+\setlength{\parskip}{0pt}
+\renewcommand{\baselinestretch}{1.25}
+% \linespread{1.25}%修改行距 https://blog.csdn.net/weixinhum/article/details/104594454
+%\newcommand{\setParDis}{\setlength {\parskip} {0.3cm} } % 设置所有段间距
+% \renewcommand{\baselinestretch}{1.25}
+% \usepackage{titlesec}
+% \titleformat{\chapter}[display]{\normalfont\huge\bfseries\center}{\chaptertitlename\ \thechapter}{10pt}{\Huge}
+% \titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+% \titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+% \titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+% \titleformat{\paragraph}[runin]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+% \titleformat{\subparagraph}[runin]{\normalfont\normalsize\bfseries}{\thesubparagraph}{1em}{}
+
+% % \titlespacing{\chapter} {0pt}{50pt}{40pt}
+% \titlespacing{\section} {0pt}{3.5ex plus 1ex minus .2ex}{2.3ex plus .2ex}
+% \titlespacing{\subsection} {0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+% \titlespacing{\subsubsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+% \titlespacing{\paragraph} {0pt}{3.25ex plus 1ex minus .2ex}{1em}
+% \titlespacing{\subparagraph} {\parindent}{3.25ex plus 1ex minus .2ex}{1em}
+
 % \ctexset {chapter = {pagestyle = fancy}}
 \fancypagestyle{plain}{
   \pagestyle{seustyle}
 }
-% \hypersetup{colorlinks=true,linkcolor=black,citecolor=black} %颜色设置
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black} %颜色设置
+\setlength{\textfloatsep}{5pt} % s论文中图与文字之间的空白间隙过大，导致排版不大美观
+% \setlength{\abovecaptionskip}{-0.15cm}、\setlength{\belowcaptionskip}{-1cm}
 \begin{document}
+% \setlength{\lineskip}{2em} %设置行间距
+% \setlength{\parskip}{2em} %设置段落间距
 \begin{sloppypar}
+% \input{chapter/prsentation.tex}
 \input{chapter/abstract.tex}
 \mainmatter
 
@@ -44,9 +110,9 @@
 \input{chapter/predicterror.tex}
 \input{chapter/system.tex}
 \input{chapter/conclusion.tex}
-\backmatter
-%打印参考文献表
-% \input{chapter/acknowledge.tex}
+% \backmatter
+% %打印参考文献表
+\input{chapter/acknowledge.tex}
 \thesisbib
 
 \appendix
@@ -62,3 +128,32 @@
 \end{document}
 % 在线表格生成工具https://json.im/tableConvert/   https://www.tablesgenerator.com/latex_tables  https://www.tablesgenerator.com/#
 % 知识规则抽取工具 https://zhuanlan.zhihu.com/p/353043426
+
+
+
+% \begin{thenomenclature} 
+%     \nomgroup{A}
+%         \nomenclature{CCD}{charge-coupled device\nomchinese{电荷耦合器件}}
+%         \item [{IT}]\begingroup Information Technology\nomeqref {1.0}\nompageref{6}
+%         \item [{Ops}]\begingroup Operations\nomeqref {1.0} \nompageref{6}
+%         \item [{AIOps}]\begingroup Artificial Intelligence for IT Operations\nomeqref {1.0}  \nompageref{6}
+%         \item [{API}]\begingroup Application Programming Interface\nomeqref {1.0}\nompageref{6}
+%         \item [{KPI}]\begingroup Key Performance Indicators\nomeqref {1.0}\nompageref{6}
+%         \item [{SLB}]\begingroup Server Load Balancer\nomeqref {1.0} \nompageref{6}
+      
+%         \item [{ECS}]\begingroup Elastic Compute Service\nomeqref {1.0} \nompageref{6}
+%         \item [{RNN}]\begingroup Recurrent Neural Networks\nomeqref {1.0} \nompageref{6}
+%         \item [{LSTM}]\begingroup Long Short-Term Memory\nomeqref {1.0} \nompageref{6}
+%         \item [{BiLSTM}]\begingroup Bi-directional Long Short-Term Memory\nomeqref {1.0} \nompageref{6}
+%         \item [{SVM}]\begingroup Support Vector Machines\nomeqref {1.0} \nompageref{6}
+%         \item [{RGCN}]\begingroup Relational Graph Convolutional Networks\nomeqref {1.0} \nompageref{6}
+%         \item [{VPC}]\begingroup Virtual Private Cloud\nomeqref {1.0} \nompageref{6}
+%         \item [{DTW}]\begingroup Dynamic Time Warping\nomeqref {1.0} \nompageref{6}
+%         \item [{k8s}]\begingroup kubeneters\nomeqref {1.0} \nompageref{6}
+%         \item [{MR}]\begingroup Mean Rank\nomeqref {1.0} \nompageref{6}
+%         \item [{Hits@n}]\begingroup Hits at n\nomeqref {1.0} \nompageref{6}
+%         \item [{HSMM}]\begingroup Hidden Semi-Markov Model\nomeqref {1.0} \nompageref{6}
+%         \item [{B/S}]\begingroup Browser/Server\nomeqref {1.0} \nompageref{6}
+%         \item [{SLS}]\begingroup Log Service\nomeqref {1.0} \nompageref{6}
+
+% \end{thenomenclature}

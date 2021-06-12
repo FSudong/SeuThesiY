@@ -99,24 +99,52 @@ BoldItalicFont=timesbi.ttf
 
 
 
-
-
-
 \ctexset{%
-    chapter/format=\centering,
-    chapter/nameformat=\large\heiti,
-    chapter/numberformat=\large\heiti,
-    chapter/titleformat=\large\heiti,
-    chapter/beforeskip=0pt,
-    section/format=\raggedright,
-    section/nameformat={\large\bfseries},
-    section/numberformat={\large\bfseries},
-    section/titleformat={\sihao\bfseries},
-    subsection/format=\sihao\mdseries\raggedright,
-    subsubsection/format=\sihao\mdseries\raggedright,
-    listfigurename={插图目录},
-    listtablename={表格目录}
+chapter/format=\centering\heiti\zihao{3},
+chapter/nameformat=\sanhao\heiti\bfseries,
+chapter/numberformat=\sanhao\heiti\bfseries,
+chapter/titleformat=\sanhao\heiti\bfseries,
+chapter/beforeskip=0pt,
+% chapter/beforeskip=1.73ex,
+% chapter/afterskip=1.73ex,
+section/format=\sihao\raggedright, % 不能宋体加粗（只能beginclass使用autofakebold 或者用黑体替换）
+section/nameformat={\sihao\bfseries},
+section/numberformat={\sihao\bfseries},
+section/titleformat={\sihao\bfseries},
+section/beforeskip=1.73ex,
+section/afterskip=1.73ex,
+subsection/format=\heiti\xiaosihao\raggedright,
+subsection/beforeskip=1.73ex,
+subsection/afterskip=1.73ex,
+subsubsection/format=\xiaosihao\mdseries\raggedright,
+subsubsection/beforeskip=1.73ex,
+subsubsection/afterskip=1.73ex,
+listfigurename={插图目录},
+listtablename={表格目录}
 }
+
+% https://blog.csdn.net/qq_44643644/article/details/107358084
+% \ctexset{%
+%     chapter/format=\centering\heiti\sanhao,
+%     chapter/nameformat=\sanhao\heiti,
+%     chapter/numberformat=\sanhao\heiti,
+%     chapter/titleformat=\sanhao\heiti,
+%     chapter/beforeskip=0pt,
+%     section/format=\raggedright,
+%     section/nameformat={\sihao\bfseries},
+%     section/numberformat={\sihao\bfseries},
+%     section/titleformat={\sihao\bfseries},
+%     % section/beforeskip = {1.73ex plus 0.0ex minus .0ex},
+% 	% section/afterskip = {1.73ex plus 0.0ex minus .0ex},
+%     subsection/format=\heiti\xiaosihao\mdseries\raggedright,
+%     % subsection/beforeskip = {1.73ex plus 0.0ex minus .0ex},
+% 	% subsection/afterskip = {1.73ex plus 0.0ex minus .0ex},
+%     % subsubsection/format=\sihao\mdseries\raggedright,
+%     % subsubsection/beforeskip = {1.73ex plus 0.0ex minus .0ex},
+% 	% subsubsection/afterskip = {1.73ex plus 0.0ex minus .0ex},
+%     listfigurename={插图目录},
+%     listtablename={表格目录}
+% }
 \RequirePackage[font=small]{caption}
 %\RequirePackage{mathptmx}
 \RequirePackage{amsmath}
@@ -137,9 +165,24 @@ BoldItalicFont=timesbi.ttf
 \RequirePackage{graphicx}
 \graphicspath{{figures/}{./}}
 \RequirePackage{nomencl}
-\makenomenclature
+% \makenomenclature
 \newcommand{\setnomname}[1]{\renewcommand\nomname{#1}}
 \renewcommand{\nomname}{缩略词表}
+
+% \renewcommand{\nomname}{\makebox[\linewidth]{缩写、符号清单、术语表}}
+\newcommand{\nomdescr}[1]{
+    \parbox[t]{8cm}{\raggedright\strut #1 \strut}
+}
+\newcommand{\nomdescrchn}[1]{
+    \hfill\parbox[t]{4.5cm}{\strut #1 \strut}\ignorespaces
+}
+\newcommand{\nomchn}[4][]{
+    \nomenclature[#1]{#2}{
+        \nomdescr{#3}
+        \nomdescrchn{#4}
+    }
+}
+\makenomenclature
 \RequirePackage{algorithm}
 \RequirePackage{algorithmic}
 \numberwithin{algorithm}{chapter}
@@ -176,7 +219,7 @@ BoldItalicFont=timesbi.ttf
         \includegraphics[width=\textwidth]{figures/back-cover.png}}
     \end{picture}
 }
-
+% \RequirePackage[top=2cm,bottom=2cm,left=2.5cm,right=2.5cm,a4paper]{geometry}
 \RequirePackage[top=2cm,bottom=2cm,left=2cm,right=2cm,a4paper]{geometry}
 \RequirePackage{fancyhdr}
 \fancypagestyle{seustyle}{%
@@ -442,6 +485,7 @@ BoldItalicFont=timesbi.ttf
 
     \hspace*{20.5cm}
     {\songti\sihao\centerline{\today} \par}
+    % {\songti\sihao\centerline{2021年 月 日} \par}
     \eject
     \pdfpagewidth=210mm
     \pdfpageheight=297mm
@@ -553,6 +597,7 @@ BoldItalicFont=timesbi.ttf
     \vfill
     \setcounter{page}{1}
     {\songti\sihao\centerline{\today} \par}
+    % {\songti\sihao\centerline{\quad} \par}
 
     \clearpage\thispagestyle{empty}\cleardoublepage%
     \thispagestyle{empty}
@@ -563,12 +608,13 @@ BoldItalicFont=timesbi.ttf
         \includegraphics[height=0.63in]{figures/seu-text-logo}
 
         \ifmasters
-            \includegraphics{figures/master-hwzs}
+            % \includegraphics{figures/master-hwzs}
+            \includegraphics[scale=1]{figures/engineering-hwzs}
         \else
             \includegraphics{figures/doctor-hwzs}
         \fi
 
-        \vspace{31.5pt}
+        \vspace{28pt}
         \yihao\heiti\@title\@thesisthanks\\
         \yihao\heiti\@subtitle
         \vspace{42pt}
@@ -638,6 +684,7 @@ BoldItalicFont=timesbi.ttf
             {\@departmenteng}\\
             {\universitynameeng}\\
             {\todayeng}
+            {\quad}
             \par
         }%
     \end{center}%
@@ -732,7 +779,7 @@ BoldItalicFont=timesbi.ttf
         \cleardoublepage
         \phantomsection
         \addcontentsline{toc}{chapter}{\nomname}
-        \pagestyle{nom}
+        % \pagestyle{nom}
         \printnomenclature[1in]
     \fi
 

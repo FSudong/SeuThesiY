@@ -6,8 +6,15 @@
 虽然文献\parencite{feng2016gake,shi2017knowledge}尝试将图结构上下文引入嵌入表示，但是它们都将原本的图结构转为邻居上下文、路径上下文再进行嵌入表示学习。这种方式不足以获取全面的图结构上下文信息，且不能满足动态的嵌入表示学习，即不能根据具体上下文给同一实体不同的嵌入表示。
 % 所以本文利用图神经网络获取组件-事件知识图谱中的上下文结构信息，再结合实体的语义信息，获取动态的实体嵌入表示。
 
-为了满足实体随上下文动态表示，本章主要设计了针对组件-事件知识图谱的知识表示学习模型，并分为3节展开介绍。首先，本章进行了场景分析，罗列了组件-事件知识图谱进行表示学习时要解决的问题。然后详细介绍了针对组件-事件
-知识图谱的表示学习模型。最后，本章设计了详细的实验验证本文模型的有效性。
+为了满足实体随上下文动态表示，本章设计了针对组件-事件知识图谱的知识表示学习方案（Dynamic Knowledge Graph Embedding，DKGE）。本章共分为4节展开介绍：首先，本章介绍了所提表示学习方案的总体框架；随后，本章进行了场景分析，罗列了组件-事件知识图谱进行表示学习时要解决的问题；然后详细介绍了针对组件-事件知识图谱的表示学习模型；最后，本章设计了详细的实验验证本文模型的有效性。
+\section{总体框架}
+本章提出的针对组件-事件知识图谱的表示学习方案的总体框架图如\ref{kg-repre-total}所示。由图可见，输入为三元组及其对应的上下文图结构。实体表示被分为了语义表示和结构表示两部分，语义表示通过实体文本属性训练的预训练模型获取，结构表示通过引入注意力机制的关系图卷积网络获取。关系表示则只有语义表示。整个表示学习模型，通过训练模块计算损失函数并更新模型参数，通过预测模块检测其效果。
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.75\textwidth]{kg-repre-total.pdf}
+    \caption{组件-事件知识图谱动态表示学习总体框架图\label{kg-repre-total}}
+\end{figure}
+
 \section{场景分析}\label{backgroud-analysis}
 % GCN  RGCN  SACN KBAT
 本节主要分析了组件-事件知识图谱的特性，解释了为何本文的知识表示学习与上下文背景信息相关，且需要动态的嵌入表示。
@@ -90,7 +97,7 @@
 \section{组件-事件知识图谱动态表示学习模型}
 上文介绍到实体会出现在不同的上下文中，所以需要随着上下文的变化拥有动态的向量表示。由于RGCN可以充分提取图的拓扑结构信息，所以本文使用RGCN作为编码器，获取实体的上下文图结构信息。在RGCN部分，为了让实体对不同的邻居结点有不同的侧重，本文又引入了注意力机制给邻居结点赋予了不同的权重，即Attention-RGCN。
 
-本节详细介绍了针对组件-事件知识图谱的表示学习方法，分为模型结构、优化目标和预测3小节。
+本节详细介绍了针对组件-事件知识图谱的表示学习方法，分为模型结构、模型训练和预测3小节。
 \subsection{模型结构}
 整个模型结构如图\ref{kg-representation}所示，可见主要包括嵌入层、Attention-RGCN层、三元组分类层、实体分类层和关系分类层。下面将会分别对每一层展开介绍。
 \begin{figure}[htbp]
@@ -99,14 +106,14 @@
     \caption{组件-事件知识图谱表示学习模型\label{kg-representation}}
 \end{figure}
 
-在嵌入层，模型的输入除了三元组$(head, relation, tail)$还有该三元组所在的上下文图$graph$，即$(graph, head,rlation,tail)$。在输入数据前，若三元组为$graph$中存在的，会将$graph$中$head$与$tail$之间的关系$relaion$去掉，防止引入的图结构信息$head_{bg}$与$tail_{bg}$包含了$relation$信息；若三元组中$head$或$tail$不存在于$graph$中，则对应$head_{bg}$或$tail_{bg}$设置为全零。在输入数据后，数据被嵌入层转化为初步向量表示，$graph$被转为了张量矩阵，$head$、$relation$、$tail$则都被转为了单维的向量。初始的嵌入层向量来自于实体、关系的语义信息。具体实现上，使用文本类的日志数据对Bert\cite{devlin2018bert}进行预训练，然后每个实体或关系的初始特征向量使用其分词后多个单词的向量均值。
+在嵌入层，模型的输入除了三元组$(head, relation, tail)$还有该三元组所在的上下文图$graph$，即$(graph, head,rlation,tail)$。在输入数据前，若三元组为$graph$中存在的，会将$graph$中$head$与$tail$之间的关系$relaion$去掉，防止引入的图结构信息$head_{bg}$与$tail_{bg}$包含了$relation$信息；若三元组中$head$或$tail$不存在于$graph$中，则对应$head_{bg}$或$tail_{bg}$设置为全零。在输入数据后，数据被嵌入层转化为初步向量表示，$graph$被转为了张量矩阵，$head$、$relation$、$tail$则都被转为了单维的向量。初始的嵌入层向量来自于实体、关系的语义信息。具体实现上，使用实体的属性信息对Bert\cite{devlin2018bert}进行预训练，然后每个实体或关系的初始特征向量使用其分词后多个单词的向量均值。
 
 Attention-RGCN层主要在RGCN模型中引入了注意力机制。章节\ref{RGCN}已经对RGCN进行了介绍，在进行特征传播时，实体对其上下文实体都赋予了相同的权重。但在组件-事件知识图谱中，实体对其上下文邻居实体是有不同侧重的，如图\ref{graph-example}中$cpu 100\%$和$memory 100\%$导致了$Backoff$的发生，但$memory 100\%$对$Backoff$的发生更具关键性，它意味着$container1$中没有足够的内存满足$ts-train-service$配置文件里规定的启动需求。因此，本文将注意力机制引入图卷积网络的传播过程，如式\ref{attention-rgcn}所示。
 \begin{equation}
     h_{i}^{(l+1)}=\sigma\left(\sum_{r \in \mathcal{R}} \sum_{j \in \mathcal{N}_{i}^{r}} \alpha_{(j, r, i)} \frac{1}{c_{i, r}} W_{r}^{(l)} h_{j}^{(l)}+W_{0}^{(l)} h_{i}^{(l)}\right)
     \label{attention-rgcn}
 \end{equation}
-整体结构与式\ref{propo-in-directedgraph}一致，其中新引入的$\alpha_{(j, r, i)}$目的在于计算第$i$个结点对其在关系$r$下的邻居结点$j \in \mathcal{N}_{i}^{r}$的注意力权重。其计算公式如下：
+本式整体与式\ref{propo-in-directedgraph}一致，各个符号含义此处不进行赘述。其中新引入的$\alpha_{(j, r, i)}$目的在于计算第$i$个结点对其在关系$r$下的邻居结点$j \in \mathcal{N}_{i}^{r}$的注意力权重。其计算公式如下：
 \begin{equation}
     v_{(j, r, i)}=\mathbf{W_a}^{T}\left(\mathbf{W_e} h_{j}+\mathbf{W_r} h_{r} + \mathbf{W_e} h_{i}\right)
     \label{group-loss-part1}
@@ -115,7 +122,7 @@ Attention-RGCN层主要在RGCN模型中引入了注意力机制。章节\ref{RGC
     \alpha_{(j, r, i)}=\operatorname{softmax}\left(v_{(j, r, i)}\right)=\frac{\exp \left(v_{(j, r, i)}\right)}{\sum_{j^{\prime} \in \mathcal{N}_{i}^{r}} \exp \left(v_{\left(j^{\prime}, r, i\right)}\right)}
     \label{group-loss-part2}
 \end{equation}
-式\ref{group-loss-part1}中$h_i,h_j,h_r\in\mathbb{R}^{d}$，$\mathbf{W_a}\in \mathbb{R}^{d}$，$\mathbf{W_e},\mathbf{W_r} \in \mathbb{R}^{d\times d}$是注意力参数矩阵。最终得到的$ v_{(j, r, i)} \in \mathbb{R}$即为索引为$i$的结点对关系$r$下索引为$j$的结点的注意力权重值。式\ref{group-loss-part2}使用$softmax(.)$函数进一步规范化注意力权重值，其中$\mathcal{N}_{i}^{r}$为索引为$i$的结点在关系$r$下对应的实体索引值集合。经过Attention-RGCN层后可以得到$head$、$tail$对应的上下文图结构嵌入表示$head_{bg}$、$tail_{bg}$，再与通过初步嵌入层的语义向量$head_{sem}$、$tail_{sem}$累加即可得到同时融入了语义信息和上下文图结构信息的嵌入表示$head_{new}$、$tail_{new}$。
+式\ref{group-loss-part1}中$h_i,h_j,h_r\in\mathbb{R}^{d}$分别对应索引为$i,j$两实体和关系$r$的嵌入向量，$\mathbf{W_a}\in \mathbb{R}^{d}$，$\mathbf{W_e},\mathbf{W_r} \in \mathbb{R}^{d\times d}$是注意力参数矩阵。最终得到的$ v_{(j, r, i)} \in \mathbb{R}$即为索引为$i$的结点对关系$r$下索引为$j$的结点的注意力权重值。式\ref{group-loss-part2}使用$softmax(.)$函数进一步规范化注意力权重值，其中$\mathcal{N}_{i}^{r}$为索引为$i$的结点在关系$r$下关联的实体索引值集合。经过Attention-RGCN层后可以得到对应索引$i$的实体$head$、对应索引$j$的实体$tail$的上下文图结构嵌入表示$head_{bg}$、$tail_{bg}$，再与通过初步嵌入层的语义向量$head_{sem}$、$tail_{sem}$累加即可，得到同时融入了语义信息和上下文图结构信息的嵌入表示$head_{new}$、$tail_{new}$。
 
 实体分类器用于对实体进行分类，类别标签包括$contanier$、$event$、$service$等共计$c_{n}$个。输入为经过Attention-RGCN得到的融合了语义及上下文图结构信息的嵌入表示$head_{new}$、$tail_{new}$。随后将$head_{new}$、$tail_{new}$输入$d \times h \times c_{n}$的多层感知机和$softmax(.)$层，即可得到实体对各类分类情况。损失函数使用交叉熵，如式\ref{my_entity_loss}所示。其中，$i$、$j$对应着$head$、$tail$两实体的索引号，$h_i$、$h_j$为两实体在网络模型中的输出，$y_i$、$y_j$为两实体的标注向量，$k$表示向量第$k$维度。
 \begin{equation}
@@ -123,13 +130,13 @@ Attention-RGCN层主要在RGCN模型中引入了注意力机制。章节\ref{RGC
     \label{my_entity_loss}
 \end{equation}
 
-关系分类器用于对关系向量分类，类别包括$cause$、$happen$、$hold$等。与实体分类一样，使用多层感知机、$softmax(.)$层分类，然后损失函数使用交叉熵即可，如式\ref{my_relation_loss}所示。其中，$h_r$为关系对应的网络输出向量，$y_r$为关系的标注向量，$k$表示向量第$k$维度。
+关系分类器用于对关系向量分类，类别包括$cause$、$happen$、$hold$等。与实体分类一样，使用多层感知机、$softmax(.)$层分类，然后损失函数使用交叉熵即可，如式\ref{my_relation_loss}所示。其中，$h_r$为关系$relation$对应的网络输出向量，$y_r$为关系的标注向量，$k$表示向量第$k$维度。
 \begin{equation}
     \mathcal{L}_{relation}=- \sum_{k=1}^{K} y_{r k} \ln h_{r k}
     \label{my_relation_loss}
 \end{equation}
 
-三元组分类器用于判别三元组是否存在，可以使用文献\parencite{trouillon2016complex}中形如式\ref{attention-rgcn-group-score}的评分函数。其中$\operatorname{diag}\left(.\right)$将$h_r\in\mathbb{R}^{d}$中每一个元素当作二维矩阵的对角线元素，从而得到$\mathbb{R}^{d}\times \mathbb{R}^{d}$的二维矩阵。损失函数使用交叉熵，如式\ref{my_group_loss}所示，其中$\mathcal{T}$表示所有的输入$(g, i, r, j)$集合，$l(.)$为激活函数，$y$为三元组是否成立的标签。
+三元组分类器用于判别三元组是否存在，可以使用文献\parencite{trouillon2016complex}中形如式\ref{attention-rgcn-group-score}的评分函数。其中$\operatorname{diag}\left(.\right)$将$h_r\in\mathbb{R}^{d}$中每一个元素当作二维矩阵的对角线元素，从而得到$\mathbb{R}^{d}\times \mathbb{R}^{d}$的二维矩阵。损失函数使用交叉熵，如式\ref{my_group_loss}所示。其中$\mathcal{T}$表示所有的输入$(g, i, r, j)$集合，$l(.)$为激活函数，$y$为三元组是否成立的标签，$g$为三元组$(i, r, j)$所在的上下文图结构。
 \begin{equation}
     f(h_{j}, h_{r}, h_{i})=h_{j}^{T} \operatorname{diag}\left(h_{r}\right) h_{i}
     \label{attention-rgcn-group-score}
@@ -140,8 +147,8 @@ Attention-RGCN层主要在RGCN模型中引入了注意力机制。章节\ref{RGC
     \label{my_group_loss}
 \end{equation}
 
-\subsection{优化目标}\label{representation-paras-learn}
-根据上一小节所述，本模型的损失函数为实体分类器、关系分类器、三元组分类器三部分损失函数之和。最终本模型的损失函数如式\ref{represent-loss-all}所示：
+\subsection{模型训练}\label{representation-paras-learn}
+根据上一小节所述，本模型的损失函数为实体分类器、关系分类器、三元组分类器三部分损失函数之和。最终本模型的损失函数如式\ref{represent-loss-all}所示，各个符号含义已在上文进行了描述：
 
 \begin{equation}
     \begin{aligned}
@@ -152,10 +159,49 @@ Attention-RGCN层主要在RGCN模型中引入了注意力机制。章节\ref{RGC
     \label{represent-loss-all}
 \end{equation}
 
-\subsection{预测}
+根据以上损失函数计算的损失值，就可以利用梯度下降算法更新模型参数，直到模型训练完成。模型训练算法如\ref{repre-alg}所示。
+\begin{algorithm}[htbp]
+	\renewcommand{\algorithmicrequire}{\textbf{输入:}}
+	\renewcommand{\algorithmicensure}{\textbf{输出:}}
+	\caption{组件-事件知识图谱动态表示学习模型的训练算法}
+	\label{repre-alg}
+	\begin{algorithmic}[1]
+		\REQUIRE 四元组$(graph,head,relation,tail)$集合$D$，学习率$\alpha$，训练代数$epoch$
+		\ENSURE 更新后的模型参数$\theta$
+		\STATE 随机初始化模型参数$\theta$，$e \gets 0$
+		\WHILE {$e<{epoch}$}
+            \FORALL{$(graph,head,relation,tail) \in D$}
+                \IF {$(head,relation,tail) \in graph$}                        %条件语句
+                    \STATE 将$(head,relation,tail)$从$graph$中去除
+                \ENDIF
+                \STATE ${graph}_{sem}, {head}_{sem}, {tail}_{sem}, {relation}_{sem} \gets \operatorname{Embedding}(graph,head,relation,tail)$
+                \STATE ${head}_{bg} \gets 0$, ${tail}_{bg} \gets 0$ 
+                \IF {$head,tail \in graph$}          
+                    \STATE ${head}_{bg}, {tail}_{bg} \gets \operatorname{Attention-RGCN}({graph}_{sem})$
+                \ENDIF
+                \STATE ${head}_{new} \gets {head}_{bg} + {head}_{sem}$,${tail}_{new} \gets {tail}_{bg} + {tail}_{sem} $
+                \STATE 如式\ref{represent-loss-all}计算损失值$\mathcal{L}_{\theta }\left(graph,head,relation,tail \right)$
+                \STATE $\theta \gets \theta - \alpha \nabla \mathcal{L}_{\theta }\left(graph,head,relation,tail \right)$
+            \ENDFOR
+        \ENDWHILE 
+		\STATE \textbf{return} $\theta$
+	\end{algorithmic}  
+\end{algorithm}
+% \begin{algorithm}
+%     %\SetAlgoRefName{} % no count number
+%     \caption{pISTA}
+%     \label{alg:pISTA}
+%     Parameters: $\lambda, \gamma$\;
+%     Initialization: $x_0$\;
+%     \While{not converge}{
+%         $x_{k+1}=\Psi^*T_{\lambda\gamma}(\Psi(x_k+\gamma \mathcal{F}^{-1}Q_p(y-Q_p \mathcal{F}x_k)))$\;
+%     }
+% \end{algorithm}
+
+\subsection{模型预测}
 对组件-事件知识图谱进行表示学习后，可以进行抽象事件预测（预测在已发生抽象事件情况下是否会在某组件上发生某种事件）。本质上，就是在给定上下文图结构$g$下，三元组$(i, r, j)$是否成立。
 
-将上下文图结构、头实体、关系和候选尾实体$g$、$(i, r, j)$输入表示学习模型中，会得到该三元组成立的评分，将评分最高的三元组对应的尾实体作为预测抽象事件即可，如式\ref{predict-next-event}所示。
+将上下文图结构、头实体、关系和候选尾实体$g$、$(i, r, j)$输入表示学习模型中，会得到该三元组成立的评分，将评分最高的三元组对应的尾实体作为预测抽象事件即可，如式\ref{predict-next-event}所示，其中$events$为候选抽象事件索引集，其它符号含义已在上文进行了描述。
 
 \begin{equation}
     e = \mathop{\arg\max}\limits_{j\in events}( f (h_i, h_r, h_j)) 
@@ -168,26 +214,43 @@ Attention-RGCN层主要在RGCN模型中引入了注意力机制。章节\ref{RGC
 \subsection{数据集构建}
 如实际运维场景一样，本文将模拟收集的数据划分成了历史数据和实时数据。具体上，模拟收集的所有数据会首先按照故障类型分组。然后，每种故障类型下的时间段集合会被划分成历史故障数据和实时故障数据，如表\ref{anomal-split}所示。
 
-根据章节\ref{event-cause-classidier-experiment}事件因果关系判别实验结果，本处选用SVM模型从每类故障对应的历史故障数据中挖掘事件因果对，再按照章节\ref{graph-generate}所示步骤沉淀生成每类故障的组件-事件知识图谱。由模型初步生成的知识图谱虽然满足了实际使用需求，但不能保证没有任何瑕疵。因此，后续运维专家参与了知识图谱调优，保证了知识图谱绝对无瑕。在调优过程中，因为本文方法初步生成的知识图谱含有实体、关系量级低，所以知识图谱调优过程消耗人工较少。
 \begin{table}[htbp]
     \caption{模拟数据划分}
     \centering
     \label{anomal-split}
     \begin{tabular}{cccc}
-    \toprule[2pt]
-                分布式应用 & \begin{tabular}[c]{@{}c@{}}模拟故障\\ 时间段总数\end{tabular} & \begin{tabular}[c]{@{}c@{}}历史故障\\ 时间段数\end{tabular} & \begin{tabular}[c]{@{}c@{}}实时故障\\ 时间段数\end{tabular} \\ \midrule[2pt]
+    \toprule[1.5pt]
+                分布式应用 & \begin{tabular}[c]{@{}c@{}}模拟故障\\ 时间段总数\end{tabular} & \begin{tabular}[c]{@{}c@{}}历史故障\\ 时间段数\end{tabular} & \begin{tabular}[c]{@{}c@{}}实时故障\\ 时间段数\end{tabular} \\ \midrule[1.5pt]
     train-ticket & 471                                                  & 325                                                 & 146                                                 \\
-    sock-shop    & 539                                                  & 371                                                 & 168                                                 \\ \bottomrule[2pt]
+    sock-shop    & 539                                                  & 371                                                 & 168                                                 \\ \bottomrule[1.5pt]
     \end{tabular}
 \end{table}
+
+根据章节\ref{event-cause-classidier-experiment}事件因果关系判别实验结果，本处选用SVM模型从每类故障对应的历史故障数据中挖掘事件因果对，再按照章节\ref{graph-generate}所示步骤沉淀生成每类故障的组件-事件知识图谱。由模型初步生成的知识图谱虽然满足了实际使用需求，但不能保证没有任何瑕疵。因此，后续运维专家参与了知识图谱调优，保证了知识图谱绝对无瑕。在调优过程中，因为本文方法初步生成的知识图谱含有实体、关系量级低，所以知识图谱调优过程消耗人工较少。
+
+表\ref{kg-abstract-event-num}统计了两个分布式应用每类故障类型所对应组件-事件知识图谱的抽象事件实体数目及抽象事件因果关系对数。在每张组件-事件知识图谱中，由于每个抽象事件实体都对应着一个组件实体，所以组件到抽象事件的发生关系数量与抽象事件节点数相等；由于组件层实体数量和关系数量只与分布式应用有关，所以每个组件-事件知识图谱的组件层关系数是恒定的。train-ticket组件层关系数为1469，sock-shop组件层关系数为1043。
+
+\begin{table}[htbp]
+    \centering
+    \caption{知识库三元组数目及划分}
+    \label{triple-split}
+    \begin{tabular}{cccccccc}
+    \toprule[1.5pt]
+    分布式应用        & \begin{tabular}[c]{@{}c@{}}组件层\\ 三元组数\end{tabular} & \begin{tabular}[c]{@{}c@{}}组件-事件间\\ 三元组数\end{tabular} & \begin{tabular}[c]{@{}c@{}}事件层\\ 三元组数\end{tabular} & \begin{tabular}[c]{@{}c@{}}总\\ 三元组数\end{tabular} & 训练集  & 验证集 & 测试集 \\ \midrule[1.5pt]
+    train-ticket & 1469                                               & 339                                                   & 1182                                               & 2990                                             & 1794 & 598 & 598 \\
+    sock-shop    & 1043                                               & 563                                                   & 3089                                               & 4695                                             & 2817 & 939 & 939 \\ \bottomrule[1.5pt]
+    \end{tabular}
+\end{table} 
+
+在知识图谱中，一个关系对应着一个三元组，所以直接将各个组件-事件知识图谱中的每个关系对应的三元组视作正样本，即将其标注为“成立”。其中组件层的关系不会被重复使用，防止数据不均衡。表\ref{triple-split}为本块实验使用的正样本三元组数量，和按照6：2：2划分数据集的结果。另外，对于每一个正样本三元组，可以将其首实体或尾实体随机替换为不匹配的实体，构成负样本三元组，即“不成立”的三元组。
 
 \begin{table}[htbp]
     \caption{各类故障对应知识图谱信息}
     \centering
     \label{kg-abstract-event-num}
     \begin{tabular}{cccc}
-    \toprule[2pt]
-    分布式应用          & 故障代号                                    & 抽象事件节点数目 & 抽象事件因果关系数目 \\ \midrule[2pt]
+    \toprule[1.5pt]
+    分布式应用          & 故障代号                                    & 抽象事件节点数目 & 抽象事件因果关系数目 \\ \midrule[1.5pt]
                  & f1                                      & 41       & 285        \\
                  & f2                                      & 39       & 297        \\
                  & f3                                      & 6        & 8          \\
@@ -214,27 +277,11 @@ Attention-RGCN层主要在RGCN模型中引入了注意力机制。章节\ref{RGC
                  & net\_loss\_check\_order                 & 92       & 614        \\
                  & net\_loss\_add\_cart                    & 34       & 79         \\
                  & net\_loss\_user\_register\_and\_log\_in & 17       & 55         \\
-                 & net\_loss\_goods\_appear\_delay         & 15       & 33         \\ \bottomrule[2pt]
+                 & net\_loss\_goods\_appear\_delay         & 15       & 33         \\ \bottomrule[1.5pt]
     \end{tabular}
 \end{table}
 
-\begin{table}[htbp]
-    \centering
-    \caption{知识库三元组数目及划分}
-    \label{triple-split}
-    \begin{tabular}{cccccccc}
-    \toprule[2pt]
-    分布式应用        & \begin{tabular}[c]{@{}c@{}}组件层\\ 三元组数\end{tabular} & \begin{tabular}[c]{@{}c@{}}组件-事件间\\ 三元组数\end{tabular} & \begin{tabular}[c]{@{}c@{}}事件层\\ 三元组数\end{tabular} & \begin{tabular}[c]{@{}c@{}}总\\ 三元组数\end{tabular} & 训练集  & 验证集 & 测试集 \\ \midrule[2pt]
-    train-ticket & 1469                                               & 339                                                   & 1182                                               & 2990                                             & 1794 & 598 & 598 \\
-    sock-shop    & 1043                                               & 563                                                   & 3089                                               & 4695                                             & 2817 & 939 & 939 \\ \bottomrule[2pt]
-    \end{tabular}
-    \end{table}
-\newpage
-表\ref{kg-abstract-event-num}统计了两个分布式应用每类故障类型所对应组件-事件知识图谱的抽象事件实体数目及抽象事件因果关系对数。在每张组件-事件知识图谱中，由于每个抽象事件实体都对应着一个组件实体，所以组件到抽象事件的发生关系数量与抽象事件节点数相等；由于组件层实体数量和关系数量只与分布式应用有关，所以每个组件-事件知识图谱的组件层关系数是恒定的。train-ticket组件层关系数为1469，sock-shop组件层关系数为1043。
-
-在知识图谱中，一个关系对应着一个三元组，所以直接将各个组件-事件知识图谱中的每个关系对应的三元组视作正样本，即将其标注为“成立”。其中组件层的关系不会被重复使用，防止数据不均衡。表\ref{triple-split}为本块实验使用的正样本三元组数量，和按照6：2：2划分数据集的结果。另外，对于每一个正样本三元组，可以将其首实体或尾实体随机替换为不匹配的实体，构成负样本三元组，即“不成立”的三元组。
 % 随后的实验中，数据的输入形式为三元组$(head,relation,tail)$及其所在上下文图结构$graph$。
-
 
 \subsection{评测指标}
 在知识图谱表示学习模型评测方式中有两个被广泛使用的任务。
@@ -244,7 +291,7 @@ Attention-RGCN层主要在RGCN模型中引入了注意力机制。章节\ref{RGC
 具体上，依据文献\parencite{bordes2013translatingE}的做法，对于每一个测试三元组$(head,relation,tail)$，实验会使用实体集合中任意不匹配$(relation,tail)$（或$(head,relation)$）的实体来替换$head$（或$tail$）生成受损三元组，然后根据模型输出的三元组成立概率分数降序排列这些三元组。在获得所有三元组排名后，实验使用了两个衡量指标：正确实体的平均排名（即MR，mean rank）；正确实体在前N名的占比（即Hits at n，Hits@n）。MR越小，Hits@N越大，都意味着表示模型效果越好。另外，文献\parencite{bordes2013translatingE}发现生成的受损三元组可能是正确三元组，所以需要将该三元组筛选过滤掉。而本文中，由于知识图谱已被调优过，每个正确三元组都在对应$graph$中完备地存在着，当实体与$(relation,tail)$（或$(head,relation)$）不匹配时（不存在于组件-事件知识图谱中）意味着其生成的受损三元组一定是错误的，所以本块实验不需进行过滤操作。
 % 最终，train-ticket中每个正确三元组会生成1404个受损三元组，sock-shop中每个正确三元组会生成1238个受损三元组。
 
-\textbf{任务2}：三元组分类，即判断给定的三元组是否是知识图谱中真实存在的。在三元组分类任务中，给定知识图谱$graph$和三元组$(head,relation,tail)$，需要判断它是否是正确的。该任务已经在已有的工作\parencite{bordes2013translatingE,wang2014knowledge,lin2015learning}中展开过，也被广泛的应用在很多自然语言处理场景，比如问答。
+\textbf{任务2}：三元组分类，即判断给定的三元组是否是知识图谱中真实存在的。在三元组分类任务中，给定知识图谱$graph$和三元组$(head,relation,tail)$，需要判断它是否是正确的。该任务已经在已有的工作\cite{bordes2013translatingE,wang2014knowledge,lin2015learning}中展开过，也被广泛的应用在很多自然语言处理场景，比如问答。
 
 链接预测时，输入候选实体和上下文信息，输出三元组成立的概率，成立概率值越大排名越高，再计算对应的MR和Hits@N即可。三元组分类时，输入待测三元组及其上下文，输出该三元组是否成立，再计算精确率（precision）、召回率（recall）和F1值即可。
 
@@ -254,28 +301,28 @@ Attention-RGCN层主要在RGCN模型中引入了注意力机制。章节\ref{RGC
 % ）
 \subsection{实验方法}
 本块实验选取了多个对比方法以验证本文模型的优越性。实验记录了选取的每个方法在上小节两个评测任务上的表现指标。所选取的各个方法如下所示：
-\begin{itemize}
-    \item [(1)] 
+\begin{itemize}[itemsep=0 pt,topsep = 0 pt,parsep =0pt,partopsep=0pt]
+    \item [（1）] 
     \textbf{TransE}\cite{bordes2013translatingE}：TransE将每个三元组（head,relation,tail）中的relation视作从head到tail的翻译过程。
-    \item [(2)]
+    \item [（2）]
     \textbf{TransH}\cite{wang2014knowledge}：TransH将头尾实体都投影到关系所在的张量空间中，可以解决复杂的一对多、多对多关系。
-    \item [(3)]
+    \item [（3）]
     \textbf{TransR}\cite{lin2015learning}：TransR将关系也嵌入为矩阵，可以区分具有不同语义的关系。
-    \item [(4)]
+    \item [（4）]
     \textbf{GAKE}\cite{feng2016gake}：GAKE引入邻居上下文、边上下文、路径上下文信息，可以捕获图结构的语义。
-    \item [(5)]
+    \item [（5）]
     \textbf{TCE}\cite{shi2017knowledge}：TCE引入了两种结构信息，一种是实体的相邻实体，另一种是一对实体之间的关系路径。
-    \item [(6)]
-    \textbf{本文表示学习方法}：本文在章节\ref{chapter-3}所提出的组件-事件知识图谱表示学习模型。
-    \item [(7)]
-    \textbf{本文表示学习方法-1}：相比本文表示学习方法，去除了Attention-RGCN层的注意力机制。
-    \item [(8)]
-    \textbf{本文表示学习方法-2}：相比本文表示学习方法，去除实体分类模块的损失。
-    \item [(9)]
-    \textbf{本文表示学习方法-3}：相比本文表示学习方法，去除关系分类模块的损失。
+    \item [（6）]
+    \textbf{DKGE}：本文在章节\ref{chapter-3}所提出的组件-事件知识图谱表示学习模型。
+    \item [（7）]
+    \textbf{DKGE-1}：相比本文表示学习方法，去除了Attention-RGCN层的注意力机制。
+    \item [（8）]
+    \textbf{DKGE-2}：相比本文表示学习方法，去除实体分类模块的损失。
+    \item [（9）]
+    \textbf{DKGE-3}：相比本文表示学习方法，去除关系分类模块的损失。
   \end{itemize}
 
-其中，TransE、TransH和TransR将每个三元组视作一条独立的知识，用于对比验证引入上下文结构信息对表示学习的提升；GAKE、TCE引入上下文结构信息获取静态表示向量，用于对比验证动态表示学习的有效性；\textbf{本文表示学习方法-1}使用无attention机制的RGCN，用于对比验证本文在RGCN中引入注意力机制的提升；\textbf{本文表示学习方法-2}去除实体分类模块，用于对比验证引入实体类别信息对模型的提升；\textbf{本文表示学习方法-3}去除关系分类模块，用于对比验证关系类别信息对模型的提升。
+其中，TransE、TransH和TransR将每个三元组视作一条独立的知识，用于对比验证引入上下文结构信息对表示学习的提升；GAKE、TCE引入上下文结构信息获取静态表示向量，用于对比验证动态表示学习的有效性；DKGE-1使用无attention机制的RGCN，用于对比验证本文在RGCN中引入注意力机制的提升；DKGE-2去除实体分类模块，用于对比验证引入实体类别信息对模型的提升；DKGE-3去除关系分类模块，用于对比验证关系类别信息对模型的提升。
 
 \subsection{实验结果与分析}
 % \begin{table}[htbp]
@@ -310,24 +357,27 @@ Attention-RGCN层主要在RGCN模型中引入了注意力机制。章节\ref{RGC
 %     本文方法-1 & 24                           & 82.6                           \\ \hline
 %     \end{tabular}
 % \end{table}
+
+
+在链接预测任务上，表\ref{link-predict-result}列出了各个方法的链路预测结果。DKGE在MR和Hit@5指标上都得到了比其他方法更好的实验结果。在三元组分类任务上，表\ref{triple-class-result}列出来各个方法的精确率（precision）、召回率（recall）和F1值。DKGE相较基线方法获得了5\%以上的F1值提升。实验结果证明了本文利用注意力机制的RGCN获取图结构上下文信息，再结合语义信息的动态表示学习方法，可以更好地嵌入表示组件-事件知识图谱。
 \begin{table}[htbp]
     \caption{链接预测结果}
     \centering
     \label{link-predict-result}
     \begin{tabular}{ccccc}
-    \toprule[2pt]
+    \toprule[1.5pt]
            & \multicolumn{2}{c}{train-ticket} & \multicolumn{2}{c}{sock-shop} \\
-    方法     & MR            & Hits@5           & MR           & Hits@5         \\ \midrule[2pt]
+    方法     & MR            & Hits@5           & MR           & Hits@5         \\ \midrule[1.5pt]
     TransE & 59            & 48.3             & 63           & 42.7           \\
     TransH & 42            & 57.3             & 56           & 45.2           \\
     TransR & 37            & 66.2             & 43           & 59.8           \\
     GAKE   & 33            & 62.8             & 39           & 53.2           \\
     TCE    & 23            & 81.9             & 31           & 78.1           \\
-    本文表示学习方法   & \textbf{9}    & \textbf{85.4}    & \textbf{13}  & \textbf{82.9}  \\
-    本文表示学习方法-1 & 26            & 79.5             & 34           & 67.6         \\ 
-    本文表示学习方法-2 & 19           & 82.2             & 30           & 78.4           \\ 
-    本文表示学习方法-3 & 16            & 83.6            & 24           & 81.2          \\ 
-    \bottomrule[2pt]
+    DKGE   & \textbf{9}    & \textbf{85.4}    & \textbf{13}  & \textbf{82.9}  \\
+    DKGE-1 & 26            & 79.5             & 34           & 67.6         \\ 
+    DKGE-2 & 19           & 82.2             & 30           & 78.4           \\ 
+    DKGE-3 & 16            & 83.6            & 24           & 81.2          \\ 
+    \bottomrule[1.5pt]
     \end{tabular}
 \end{table}
 
@@ -336,25 +386,24 @@ Attention-RGCN层主要在RGCN模型中引入了注意力机制。章节\ref{RGC
     \centering
     \label{triple-class-result}
     \begin{tabular}{ccccccc}
-    \toprule[2pt]
+    \toprule[1.5pt]
                &                & train-ticket   &                &                & sock-shop      &                \\
-    方法         & precision      & recall         & F1             & precision      & recall         & F1             \\ \midrule[2pt]
+    方法         & precision      & recall         & F1             & precision      & recall         & F1             \\ \midrule[1.5pt]
     TransE     & 0.650          & 0.692          & 0.670          & 0.653          & 0.626          & 0.639          \\
     TransH     & 0.703          & 0.730          & 0.716          & 0.707          & 0.675          & 0.691          \\
     TransR     & 0.743          & 0.716          & 0.730          & 0.680          & 0.701          & 0.690          \\
     GAKE       & 0.781          & 0.749          & 0.765          & 0.722          & 0.742          & 0.732          \\
     TCE        & 0.804          & 0.783          & 0.793          & 0.736          & 0.769          & 0.752          \\
-    本文表示学习方法   & \textbf{0.864} & \textbf{0.837} & \textbf{0.850} & \textbf{0.836} & \textbf{0.814} & \textbf{0.825} \\
-    本文表示学习方法-1 & 0.763          & 0.816          & 0.788          & 0.776          & 0.746          & 0.761          \\
-    本文表示学习方法-2 & 0.826          & 0.801          & 0.813          & 0.783          & 0.808          & 0.795          \\
-    本文表示学习方法-3  & 0.845          & 0.822          & 0.834          & 0.788          & 0.810           & 0.799          \\ \bottomrule[2pt]
+    DKGE   & \textbf{0.864} & \textbf{0.837} & \textbf{0.850} & \textbf{0.836} & \textbf{0.814} & \textbf{0.825} \\
+    DKGE-1 & 0.763          & 0.816          & 0.788          & 0.776          & 0.746          & 0.761          \\
+    DKGE-2 & 0.826          & 0.801          & 0.813          & 0.783          & 0.808          & 0.795          \\
+    DKGE-3  & 0.845          & 0.822          & 0.834          & 0.788          & 0.810           & 0.799          \\ \bottomrule[1.5pt]
     \end{tabular}
 \end{table}
-在链接预测任务上，表\ref{link-predict-result}列出了各个方法的链路预测结果。\textbf{本文表示学习方法}在MR和Hit@5指标上都得到了比其他方法更好的实验结果。在三元组分类任务上，表\ref{triple-class-result}列出来各个方法的精确率（precision）、召回率（recall）和F1值。\textbf{本文表示学习方法}相较基线方法获得了5\%以上的F1值提升。实验结果证明了本文利用注意力机制的RGCN获取图结构上下文信息，再结合语义信息的动态表示学习方法，可以更好地嵌入表示组件-事件知识图谱。
 
-对比\textbf{本文表示学习方法-1}、\textbf{本文表示学习方法-2}、\textbf{本文表示学习方法-3}，可发现图神经网络的注意力机制对模型的提升效果最大，其可以强化重要信息的传播、挖掘重要的图结构信息；实体、关系类别信息的引入也可以改善知识表示学习效果，其中实体类别信息比关系类别信息重要性更高。
+对比DKGE-1、DKGE-2、DKGE-3，可发现图神经网络的注意力机制对模型的提升效果最大，其可以强化重要信息的传播、挖掘重要的图结构信息；实体、关系类别信息的引入也可以改善知识表示学习效果，其中实体类别信息比关系类别信息重要性更高。
 
-另外，\textbf{本文表示学习方法}在三元组分类任务上取得的精确率要比链接预测上Hits@5要高，原因在于三元组分类任务中每个“成立”的三元组都只生成$\omega$个“不成立”的受损三元组（本实验中$\omega$取100）；而链接预测任务中，每个正确三元组与平均约1000个受损三元组进行比较排序。
+另外，DKGE在三元组分类任务上取得的精确率要比链接预测上Hits@5要高，原因在于三元组分类任务中每个“成立”的三元组都只生成$\omega$个“不成立”的受损三元组（本实验中$\omega$取100）；而链接预测任务中，每个正确三元组与平均约1000个受损三元组进行比较排序。
 
 本块实验中，本文模型达到最佳效果时使用的超参为：嵌入层维度为100；Attention-RGCN为4层、输入窗口大小为128节点，中间隐状态维度为50、输出隐状态维度为100；实体分类器结构为$100*32*7$，7为实体种类数；关系分类器结构为$100*32*8$，8为关系种类数。
 \section{本章小结}

@@ -1,0 +1,13 @@
+
+\begin{thenomenclature} 
+\nomgroup{A}
+  \item [{AIOps}]\begingroup Artificial Intelligence for IT Operations\nomeqref {1.0}\nompageref{6}
+  \item [{API}]\begingroup Application Programming Interface\nomeqref {1.0}\nompageref{6}
+  \item [{IT}]\begingroup Information Technology\nomeqref {1.0}\nompageref{6}
+  \item [{KPI}]\begingroup Key Performance Indicators\nomeqref {1.0}\nompageref{6}
+  \item [{Ops}]\begingroup Operations\nomeqref {1.0}\nompageref{6}
+\nomgroup{C}
+  \item [{CCD}]\begingroup  \nomdescr {charge-coupled device} \nomdescrchn {电荷耦合器件} \nomeqref {0.0}\nompageref{1}
+  \item [{CCDCCD}]\begingroup  \nomdescr {charge-coupled device charge-coupled device charge-coupled device} \nomdescrchn {电荷耦合器件电荷耦合器件电荷耦合器件} \nomeqref {0.0}\nompageref{1}
+
+\end{thenomenclature}
